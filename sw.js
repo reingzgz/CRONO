@@ -2,7 +2,7 @@
    Guarda en el dispositivo los archivos de la propia app para que abra sin cobertura.
    NUNCA intercepta las llamadas a la API de GitHub ni nada de otro dominio. */
 
-const VERSION = "crono-v1";
+const VERSION = "crono-v2";
 const ARCHIVOS = [
   "./",
   "./index.html",

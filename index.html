@@ -477,6 +477,7 @@
               <button class="btn" id="btnNubeConectar">Guardar estos datos de conexión</button>
               <button class="btn btn-gh" id="btnNubeSubir">Subir mis datos a la nube</button>
               <button class="btn" id="btnNubeBajar">Traer datos de la nube</button>
+              <button class="btn" id="btnNubeDiag">Comprobar el token</button>
             </div>
           </div>
           <label class="check">
@@ -1856,7 +1857,7 @@ function construirInforme(d){
                  {headers:ghHead(), cache:"no-store"})
       .then(function(r){
         if(r.status === 404) return null;                 // todavia no hay copia
-        if(!r.ok) return r.text().then(function(t){ throw new Error(ghError(r.status, t)); });
+        if(!r.ok) return r.text().then(function(t){ throw new Error(ghError(r.status, t, r)); });
         return r.json().then(function(j){
           var datos = null;
           try{ datos = JSON.parse(deBase64(j.content)); }catch(e){ throw new Error("El archivo de la nube está dañado."); }
@@ -1869,11 +1870,17 @@ function construirInforme(d){
   function ghMensaje(txt){
     try{ var j = JSON.parse(txt); return j.message || ""; }catch(e){ return String(txt||"").slice(0,140); }
   }
-  function ghError(status, txt){
+  // GitHub dice en esta cabecera qué permiso exacto le faltaba al token
+  function ghPermPedido(r){
+    try{ return (r && r.headers && r.headers.get("x-accepted-github-permissions")) || ""; }catch(e){ return ""; }
+  }
+  function ghError(status, txt, r){
     var m = ghMensaje(txt);
     var cab = "HTTP " + status + (m ? ": " + m : "");
+    var perm = ghPermPedido(r);
     if(status === 401) return cab + "\n(El token no vale o ha caducado.)";
-    if(status === 403) return cab + "\n(Al token le falta permiso de escritura sobre este repositorio.)";
+    if(status === 403) return cab + "\n(Al token le falta permiso sobre este repositorio.)" +
+                       (perm ? "\n(GitHub dice que hace falta: " + perm + ")" : "");
     if(status === 404) return cab + "\n(No encuentra el repositorio, o el token no tiene acceso a él.)";
     if(status === 409) return cab;
     if(status === 422) return cab + "\n(GitHub ha rechazado el contenido enviado.)";
@@ -1922,7 +1929,7 @@ function construirInforme(d){
       .then(function(r){
         if(r.ok) return terminar();
         return r.text().then(function(t){
-          ultimo = ghError(r.status, t);
+          ultimo = ghError(r.status, t, r);
           var msg = ghMensaje(t);
           // Repositorio recién creado y todavía sin ningún commit
           if(/repository is empty/i.test(msg)){
@@ -1935,12 +1942,12 @@ function construirInforme(d){
             return ghEscribir(prev2 && prev2.sha, true).then(function(r2){
               if(r2.ok) return terminar();
               return r2.text().then(function(t2){
-                ultimo = ghError(r2.status, t2);
+                ultimo = ghError(r2.status, t2, r2);
                 // 3er intento: sin indicar la rama, por si el nombre no coincide
                 return ghEscribir(prev2 && prev2.sha, false).then(function(r3){
                   if(r3.ok) return terminar();
                   return r3.text().then(function(t3){
-                    throw new Error(ghError(r3.status, t3) +
+                    throw new Error(ghError(r3.status, t3, r3) +
                       "\n\n(Se ha intentado también con el sha actualizado y sin indicar la rama.)");
                   });
                 });
@@ -1975,7 +1982,10 @@ function construirInforme(d){
   function avisoNube(e){
     var m = String(e && e.message || e), g = ghCfg(), pistas = [];
     if(/401/.test(m)) pistas.push("Genera un token nuevo: GitHub → Settings → Developer settings → Fine-grained tokens.");
-    if(/403/.test(m)) pistas.push("Al token le falta el permiso 'Contents: Read and write' sobre este repositorio.");
+    if(/403/.test(m)){
+      pistas.push("Al token le falta el permiso 'Contents: Read and write' sobre este repositorio.");
+      pistas.push("Pulsa el botón 'Comprobar el token' aquí abajo: te dirá exactamente cuál de los dos ajustes falla.");
+    }
     if(/404/.test(m)) pistas.push("Comprueba el usuario y el nombre del repositorio, y que el token dé acceso a ese repositorio.");
     if(/Failed to fetch|NetworkError/i.test(m)) pistas.push("No hay conexión a internet en este momento.");
     if(/secret detected/i.test(m)){
@@ -1991,6 +2001,95 @@ function construirInforme(d){
           "\nToken: " + (g.token ? g.token.slice(0,10) + "… (" + g.token.length + " caracteres)" : "(vacío)"));
   }
 
+  /* ---- Comprobación del token: dice exactamente qué falla y cómo arreglarlo ---- */
+  function diagNube(){
+    leerNubeCampos();
+    var g = ghCfg();
+    if(!g.user || !g.repo || !g.token){ toast("Rellena usuario, repositorio y token"); return; }
+    var L = [], head = ghHead(), PARAR = {};
+    var repoTxt = g.user.trim() + "/" + g.repo.trim();
+    nubeEstado("comprobando el token\u2026");
+
+    var CREAR = "GitHub \u2192 Settings \u2192 Developer settings \u2192 Personal access tokens \u2192 Fine-grained tokens.";
+    var ARREGLO_PERMISO =
+      "Abre ese token en GitHub (" + CREAR + ") y revisa DOS cosas:\n\n" +
+      "  1) Repository access: marca 'Only select repositories' y elige " + repoTxt + ".\n" +
+      "     Si est\u00e1 puesto 'Public Repositories (read-only)', ese token no podr\u00e1 escribir nunca:\n" +
+      "     hay que crear uno nuevo, esa opci\u00f3n no se puede cambiar.\n\n" +
+      "  2) Permissions \u2192 Repository permissions \u2192 Contents: pon 'Read and write'.\n" +
+      "     (Metadata: Read-only se marca solo, es normal.)\n\n" +
+      "Baja del todo y pulsa 'Update permissions' para guardar. Si el token es de una organizaci\u00f3n,\n" +
+      "un administrador tiene que aprobarlo en Settings \u2192 Personal access tokens \u2192 Pending requests.";
+
+    function informe(veredicto, arreglo){
+      nubeEstado("comprobaci\u00f3n hecha");
+      alert("COMPROBACI\u00d3N DE LA CONEXI\u00d3N\n\n" +
+            "Repositorio: " + repoTxt + "  (rama " + g.rama + ")\n" +
+            "Token: " + g.token.slice(0,10) + "\u2026 (" + g.token.length + " caracteres)\n\n" +
+            L.join("\n") + "\n\n\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\n" + veredicto +
+            (arreglo ? "\n\nC\u00d3MO ARREGLARLO\n" + arreglo : ""));
+    }
+    function parar(veredicto, arreglo){ informe(veredicto, arreglo); throw PARAR; }
+    function apiRepo(cola){
+      return "https://api.github.com/repos/" + encodeURIComponent(g.user.trim()) + "/" +
+             encodeURIComponent(g.repo.trim()) + (cola || "");
+    }
+
+    fetch("https://api.github.com/user", {headers:head, cache:"no-store"})
+      .then(function(r){
+        if(r.status === 401)
+          parar("EL TOKEN NO ES V\u00c1LIDO.\nGitHub lo rechaza: est\u00e1 caducado, revocado o pegado a medias.",
+                "Crea uno nuevo en " + CREAR + "\nC\u00f3pialo entero (empieza por github_pat_) y p\u00e9galo aqu\u00ed.");
+        return r.ok ? r.json().catch(function(){ return null; }) : null;
+      })
+      .then(function(u){
+        if(u && u.login){
+          L.push("1) Token v\u00e1lido. Es de la cuenta: " + u.login);
+          if(u.login.toLowerCase() !== g.user.trim().toLowerCase())
+            L.push("   OJO: en 'Usuario/organizaci\u00f3n' pone \"" + g.user.trim() + "\". Si el repositorio es tuyo, ah\u00ed va " + u.login + ".");
+        } else {
+          L.push("1) Token v\u00e1lido.");
+        }
+        return fetch(apiRepo("?t=" + Date.now()), {headers:head, cache:"no-store"});
+      })
+      .then(function(r){
+        if(r.status === 404)
+          parar("EL TOKEN NO LLEGA A ESE REPOSITORIO.\nO el nombre est\u00e1 mal escrito, o el token no lo tiene marcado en 'Repository access'.",
+                ARREGLO_PERMISO);
+        if(r.status === 403)
+          parar("EL TOKEN NO TIENE ACCESO A ESE REPOSITORIO." +
+                (ghPermPedido(r) ? "\nGitHub dice que hace falta: " + ghPermPedido(r) : ""), ARREGLO_PERMISO);
+        if(!r.ok) return r.text().then(function(t){ parar("GitHub responde: " + ghError(r.status, t, r)); });
+        return r.json();
+      })
+      .then(function(info){
+        L.push("2) El repositorio existe y el token lo ve" + (info.private ? " (privado)." : " (p\u00fablico)."));
+        if(info.default_branch && info.default_branch !== g.rama)
+          L.push("   AVISO: la rama principal se llama \"" + info.default_branch + "\" y aqu\u00ed pone \"" + g.rama + "\".");
+        var puede = !!(info.permissions && info.permissions.push);
+        L.push("3) Permiso de escritura seg\u00fan GitHub: " + (puede ? "S\u00cd" : "NO"));
+        if(!puede)
+          parar("ES ESTO: el token puede LEER pero NO ESCRIBIR.\nPor eso sale el error 403 al subir.", ARREGLO_PERMISO);
+        return fetch(ghUrl() + "?ref=" + encodeURIComponent(g.rama) + "&t=" + Date.now(),
+                     {headers:head, cache:"no-store"});
+      })
+      .then(function(r){
+        if(r.status === 403)
+          parar("ES ESTO: al token le falta el permiso sobre los archivos (Contents) del repositorio." +
+                (ghPermPedido(r) ? "\nGitHub dice que hace falta: " + ghPermPedido(r) : ""), ARREGLO_PERMISO);
+        if(r.status === 404) L.push("4) Todav\u00eda no existe " + GH_ARCHIVO + ". Es normal la primera vez: se crear\u00e1 al subir.");
+        else if(r.ok)        L.push("4) " + GH_ARCHIVO + " se lee sin problema.");
+        else                 L.push("4) Al leer " + GH_ARCHIVO + ": HTTP " + r.status);
+        informe("TODO CORRECTO. El token puede leer y escribir en este repositorio.\nYa puedes pulsar 'Subir mis datos a la nube'.", "");
+      })
+      .catch(function(e){
+        if(e === PARAR) return;
+        nubeEstado("error de conexi\u00f3n");
+        alert("No se ha podido completar la comprobaci\u00f3n.\n\n" + String(e && e.message || e) +
+              "\n\nSi pone 'Failed to fetch', es que no hay internet en este momento.");
+      });
+  }
+
   // Pregunta a GitHub por el repositorio: sirve para validar acceso y saber la rama real
   function ghRepoInfo(){
     var g = ghCfg();
@@ -1998,7 +2097,7 @@ function construirInforme(d){
                  encodeURIComponent(g.repo.trim()) + "?t=" + Date.now(),
                  {headers:ghHead(), cache:"no-store"})
       .then(function(r){
-        if(!r.ok) return r.text().then(function(t){ throw new Error(ghError(r.status, t)); });
+        if(!r.ok) return r.text().then(function(t){ throw new Error(ghError(r.status, t, r)); });
         return r.json();
       });
   }
@@ -2292,6 +2391,7 @@ function construirInforme(d){
   $("btnNubeConectar").addEventListener("click", conectarNube);
   $("btnNubeSubir").addEventListener("click", function(){ leerNubeCampos(); subirNube(false); });
   $("btnNubeBajar").addEventListener("click", function(){ leerNubeCampos(); traerNube(); });
+  $("btnNubeDiag").addEventListener("click", diagNube);
   ["fGhUser","fGhRepo","fGhRama","fGhToken"].forEach(function(id){
     $(id).addEventListener("change", leerNubeCampos);
   });
