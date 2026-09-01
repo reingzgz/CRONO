@@ -1,0 +1,1916 @@
+{
+ "v": 3,
+ "actual": "conf",
+ "cfg": {
+  "costeHora": 16.32,
+  "suplementos": 0.15,
+  "sound": true,
+  "dec": ",",
+  "nube": {
+   "url": "https://reingzgz.github.io/cronometro/",
+   "key": "(clave eliminada)",
+   "cod": "reingzgz-github-io",
+   "auto": true,
+   "ult": "2026-08-24T15:00:19.698Z",
+   "manual": true
+  }
+ },
+ "acts": [
+  {
+   "id": "conf",
+   "modo": "secuencia",
+   "nombre": "Nueva operativa ",
+   "area": "",
+   "unidad": "prenda",
+   "udsCiclo": 2,
+   "udsLote": 30,
+   "pasos": [
+    {
+     "id": "pjw5j1",
+     "nombre": "COLOCAR CAJA + ABRIR CAJA",
+     "grupo": "inicio",
+     "uds": null
+    },
+    {
+     "id": "pjw5j2",
+     "nombre": "SACAR BOLSA CON PRENDAS",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "pjw5j3",
+     "nombre": "ABRIR BOLSA Y SACAR PRENDAS",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "pjw5j4",
+     "nombre": "COLOCAR ETIQUETA",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "pjw5j5",
+     "nombre": "CORTAR ETIQUETA",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "pjw5j6",
+     "nombre": "METER EN BOLSA",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "pjw5j7",
+     "nombre": "METER EN CAJON",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "pjw5j8",
+     "nombre": "METER EN CAJA",
+     "grupo": "cierre",
+     "uds": null
+    },
+    {
+     "id": "pjw5j9",
+     "nombre": "CERRAR CAJA",
+     "grupo": "cierre",
+     "uds": null
+    },
+    {
+     "id": "pjw5j10",
+     "nombre": "DEJAR CAJA EN PALE",
+     "grupo": "cierre",
+     "uds": null
+    }
+   ],
+   "tomas": [
+    {
+     "pid": "pjw5j1",
+     "ms": 2804.2999999523163,
+     "uds": 30,
+     "lote": 1,
+     "ts": 1786621525110,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbrli11",
+     "prev": {
+      "pid": "pjw5j1",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pjw5j2",
+     "ms": 3781.7000000476837,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621528892,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbuik12",
+     "prev": {
+      "pid": "pjw5j2",
+      "ciclo": 1,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j3",
+     "ms": 2129.2999999523163,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621531021,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbw5p13",
+     "prev": {
+      "pid": "pjw5j3",
+      "ciclo": 1,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j4",
+     "ms": 512.4000000953674,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621531534,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbwjy14",
+     "prev": {
+      "pid": "pjw5j4",
+      "ciclo": 1,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j5",
+     "ms": 242.29999995231628,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621531776,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbwqo15",
+     "prev": {
+      "pid": "pjw5j5",
+      "ciclo": 1,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j6",
+     "ms": 182,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621531958,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbwvq16",
+     "prev": {
+      "pid": "pjw5j6",
+      "ciclo": 1,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j7",
+     "ms": 182.79999995231628,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621532141,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbx0t17",
+     "prev": {
+      "pid": "pjw5j7",
+      "ciclo": 1,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j2",
+     "ms": 195.10000014305115,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621532336,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbx6818",
+     "prev": {
+      "pid": "pjw5j2",
+      "ciclo": 2,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j3",
+     "ms": 187.89999985694885,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621532524,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbxbg19",
+     "prev": {
+      "pid": "pjw5j3",
+      "ciclo": 2,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j4",
+     "ms": 212.39999985694885,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621532737,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbxhd20",
+     "prev": {
+      "pid": "pjw5j4",
+      "ciclo": 2,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j5",
+     "ms": 215.70000004768372,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621532952,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbxnc21",
+     "prev": {
+      "pid": "pjw5j5",
+      "ciclo": 2,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j6",
+     "ms": 782.2999999523163,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621533735,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tby9322",
+     "prev": {
+      "pid": "pjw5j6",
+      "ciclo": 2,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j7",
+     "ms": 249.40000009536743,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621533984,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbyg023",
+     "prev": {
+      "pid": "pjw5j7",
+      "ciclo": 2,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j2",
+     "ms": 250.5,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621534235,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbymz24",
+     "prev": {
+      "pid": "pjw5j2",
+      "ciclo": 3,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j3",
+     "ms": 201.09999990463257,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621534436,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tbysk25",
+     "prev": {
+      "pid": "pjw5j3",
+      "ciclo": 3,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j4",
+     "ms": 3281.7000000476837,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621537718,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tc1bq26",
+     "prev": {
+      "pid": "pjw5j4",
+      "ciclo": 3,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j5",
+     "ms": 346.10000014305115,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621538064,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tc1lc27",
+     "prev": {
+      "pid": "pjw5j5",
+      "ciclo": 3,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j6",
+     "ms": 2612,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621540676,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tc3lw28",
+     "prev": {
+      "pid": "pjw5j6",
+      "ciclo": 3,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j7",
+     "ms": 3949.899999856949,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786621544626,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tc6nm29",
+     "prev": {
+      "pid": "pjw5j7",
+      "ciclo": 3,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j2",
+     "ms": 9442.300000190735,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786689390383,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tqcrz35",
+     "prev": {
+      "pid": "pjw5j2",
+      "ciclo": 4,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j3",
+     "ms": 2592.699999809265,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786689392976,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tqes036",
+     "prev": {
+      "pid": "pjw5j3",
+      "ciclo": 4,
+      "lote": 2
+     }
+    },
+    {
+     "pid": "pjw5j4",
+     "ms": 1957,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1786689394932,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tqgac37",
+     "prev": {
+      "pid": "pjw5j4",
+      "ciclo": 4,
+      "lote": 2
+     }
+    },
+    {
+     "ms": 3366.399999999441,
+     "ts": 1785832988662,
+     "pid": "pugtz2",
+     "ses": null,
+     "tid": "tuoza11",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz2",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1200.199999999255,
+     "ts": 1785832989862,
+     "pid": "pugtz3",
+     "ses": null,
+     "tid": "tupwm12",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz3",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1200.5999999996275,
+     "ts": 1785838982200,
+     "pid": "pugtz4",
+     "ses": null,
+     "tid": "tf5mg11",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz4",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 2263.7999999998137,
+     "ts": 1785838984464,
+     "pid": "pugtz5",
+     "ses": null,
+     "tid": "tf7dc12",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz5",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 878.5,
+     "ts": 1785838985342,
+     "pid": "pugtz6",
+     "ses": null,
+     "tid": "tf81q13",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz6",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 2088.0999999996275,
+     "ts": 1785838987431,
+     "pid": "pugtz7",
+     "ses": null,
+     "tid": "tf9nr14",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz7",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1137.2999999998137,
+     "ts": 1785838988568,
+     "pid": "pugtz2",
+     "ses": null,
+     "tid": "tfajc15",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz2",
+      "lote": 1,
+      "ciclo": 2
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 707.0999999996275,
+     "ts": 1785838989275,
+     "pid": "pugtz3",
+     "ses": null,
+     "tid": "tfb2z16",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz3",
+      "lote": 1,
+      "ciclo": 2
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 558.6999999992549,
+     "ts": 1785838989834,
+     "pid": "pugtz4",
+     "ses": null,
+     "tid": "tfbii17",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz4",
+      "lote": 1,
+      "ciclo": 2
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 185.29999999981374,
+     "ts": 1785838990019,
+     "pid": "pugtz5",
+     "ses": null,
+     "tid": "tfbnn18",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz5",
+      "lote": 1,
+      "ciclo": 2
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 198.79999999981374,
+     "ts": 1785838990218,
+     "pid": "pugtz6",
+     "ses": null,
+     "tid": "tfbt619",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz6",
+      "lote": 1,
+      "ciclo": 2
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 146.40000000037253,
+     "ts": 1785838990365,
+     "pid": "pugtz7",
+     "ses": null,
+     "tid": "tfbx920",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz7",
+      "lote": 1,
+      "ciclo": 2
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 167.20000000018626,
+     "ts": 1785838990532,
+     "pid": "pugtz2",
+     "ses": null,
+     "tid": "tfc1w21",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz2",
+      "lote": 1,
+      "ciclo": 3
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 181.70000000018626,
+     "ts": 1785838990714,
+     "pid": "pugtz3",
+     "ses": null,
+     "tid": "tfc6y22",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz3",
+      "lote": 1,
+      "ciclo": 3
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 170.5,
+     "ts": 1785838990884,
+     "pid": "pugtz4",
+     "ses": null,
+     "tid": "tfcbo23",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz4",
+      "lote": 1,
+      "ciclo": 3
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 166.59999999962747,
+     "ts": 1785838991051,
+     "pid": "pugtz5",
+     "ses": null,
+     "tid": "tfcgb24",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz5",
+      "lote": 1,
+      "ciclo": 3
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 181.40000000037253,
+     "ts": 1785838991232,
+     "pid": "pugtz6",
+     "ses": null,
+     "tid": "tfclc25",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz6",
+      "lote": 1,
+      "ciclo": 3
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 177.09999999962747,
+     "ts": 1785838991409,
+     "pid": "pugtz7",
+     "ses": null,
+     "tid": "tfcq926",
+     "uds": 2,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz7",
+      "lote": 1,
+      "ciclo": 3
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 2749.300000000745,
+     "ts": 1785838994159,
+     "pid": "pugtz8",
+     "ses": null,
+     "tid": "tfeun27",
+     "uds": 30,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz8",
+      "lote": 1,
+      "ciclo": 4
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 757.0999999996275,
+     "ts": 1785838994916,
+     "pid": "pugtz9",
+     "ses": null,
+     "tid": "tfffo28",
+     "uds": 30,
+     "lote": 1,
+     "prev": {
+      "pid": "pugtz9",
+      "lote": 1,
+      "ciclo": 4
+     },
+     "origen": "crono"
+    },
+    {
+     "pid": "pjw5j5",
+     "ms": 400,
+     "uds": 2,
+     "lote": 2,
+     "ts": 1788249663256,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tof1411",
+     "prev": {
+      "pid": "pjw5j5",
+      "ciclo": 4,
+      "lote": 2
+     }
+    }
+   ],
+   "sesiones": [
+    {
+     "id": "swymm11",
+     "nombre": "Sesión 1 · 04/08/2026 12:08",
+     "fecha": "04/08/2026 10:36",
+     "corrido": 17173.299999952316,
+     "asignado": 0,
+     "tomas": 0,
+     "uds": 0
+    }
+   ],
+   "est": {
+    "pid": "pjw5j6",
+    "ciclo": 4,
+    "lote": 2
+   },
+   "ses": {
+    "run": false,
+    "acc": 116332.10000014305,
+    "ts": 0,
+    "ini": 1786534482673,
+    "uds": null
+   }
+  },
+  {
+   "id": "ag1rn11",
+   "modo": "runner",
+   "nombre": "Runner ",
+   "area": "PAQUE",
+   "unidad": "caja",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "pg1rn12",
+     "uds": 30,
+     "grupo": "libre",
+     "nombre": "ROMPER CAJA VACIA"
+    },
+    {
+     "id": "pg1rn13",
+     "uds": 30,
+     "grupo": "libre",
+     "nombre": "LLEVAR CAJA VACIA A JAULA"
+    },
+    {
+     "id": "pg1rn14",
+     "uds": 30,
+     "grupo": "libre",
+     "nombre": "VACIAR JAULA"
+    },
+    {
+     "id": "pg1rn15",
+     "uds": 30,
+     "grupo": "libre",
+     "nombre": "LLEVAR PRENDAS A LINEAS"
+    },
+    {
+     "id": "pg1rn16",
+     "uds": 30,
+     "grupo": "libre",
+     "nombre": "ABRIR CAJAS EN LINEAS"
+    },
+    {
+     "id": "pg1rn17",
+     "uds": 30,
+     "grupo": "libre",
+     "nombre": "ESPERA / SIN TAREA"
+    },
+    {
+     "id": "pd2n718",
+     "nombre": "LLEVAR CAJA A PUESTO",
+     "grupo": "bucle",
+     "uds": 30
+    },
+    {
+     "id": "pddch19",
+     "nombre": "ARMAR CAJAS",
+     "grupo": "bucle",
+     "uds": 30
+    },
+    {
+     "id": "pefmv20",
+     "nombre": "LLEVAR MILES DE FIN LINEA",
+     "grupo": "bucle",
+     "uds": 480
+    },
+    {
+     "id": "ph41y21",
+     "nombre": "OTROS",
+     "grupo": "bucle",
+     "uds": null
+    }
+   ],
+   "tomas": [
+    {
+     "pid": "pg1rn12",
+     "ms": 2439.100000143051,
+     "uds": 30,
+     "lote": 1,
+     "ts": 1786534460395,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tho1711",
+     "prev": {
+      "pid": "pg1rn12",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pg1rn12",
+     "ms": 1947.1999998092651,
+     "uds": 30,
+     "lote": 1,
+     "ts": 1786534462342,
+     "origen": "crono",
+     "ses": null,
+     "tid": "thpja12",
+     "prev": {
+      "pid": "pg1rn12",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pg1rn12",
+     "ms": 2323,
+     "uds": 30,
+     "lote": 1,
+     "ts": 1786534464665,
+     "origen": "crono",
+     "ses": null,
+     "tid": "thrbt13",
+     "prev": {
+      "pid": "pg1rn12",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pg1rn13",
+     "ms": 4297.900000095367,
+     "uds": 30,
+     "lote": 1,
+     "ts": 1786621712688,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tfsc030",
+     "prev": {
+      "pid": "pg1rn13",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pg1rn17",
+     "ms": 5804.200000047684,
+     "uds": 30,
+     "lote": 1,
+     "ts": 1786621718492,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tfwt831",
+     "prev": {
+      "pid": "pg1rn17",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pddch19",
+     "ms": 6601.800000190735,
+     "uds": 30,
+     "lote": 1,
+     "ts": 1786621725094,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tg1wm32",
+     "prev": {
+      "pid": "pddch19",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pg1rn16",
+     "ms": 3119.399999856949,
+     "uds": 30,
+     "lote": 1,
+     "ts": 1786621728214,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tg4ba33",
+     "prev": {
+      "pid": "pg1rn16",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "ph41y21",
+     "ms": 8744.400000095367,
+     "uds": 1,
+     "lote": 1,
+     "ts": 1786621736958,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tgb2634",
+     "prev": {
+      "pid": "ph41y21",
+      "ciclo": 1,
+      "lote": 1
+     }
+    }
+   ],
+   "sesiones": [],
+   "est": {
+    "pid": "ph41y21",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 31714.10000014305,
+    "ts": 0,
+    "ini": 1786534457956,
+    "uds": null
+   }
+  },
+  {
+   "id": "a8ezt11",
+   "modo": "runner",
+   "nombre": "Runner ",
+   "area": "CNF",
+   "unidad": "tarea",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "p8ezt12",
+     "uds": 1,
+     "grupo": "libre",
+     "nombre": "REPONER MATERIAL"
+    },
+    {
+     "id": "p8ezt13",
+     "uds": 1,
+     "grupo": "libre",
+     "nombre": "RETIRAR PRODUCTO ACABADO"
+    },
+    {
+     "id": "p8ezt14",
+     "uds": 1,
+     "grupo": "libre",
+     "nombre": "LLEVAR A PALETIZAR"
+    },
+    {
+     "id": "p8ezt15",
+     "uds": 1,
+     "grupo": "libre",
+     "nombre": "TRAER CAJAS VACIAS"
+    },
+    {
+     "id": "p8ezt16",
+     "uds": 1,
+     "grupo": "libre",
+     "nombre": "MOVER PALE CON TRANSPALETA"
+    },
+    {
+     "id": "p8ezt17",
+     "uds": 1,
+     "grupo": "libre",
+     "nombre": "ESPERA / SIN TAREA"
+    }
+   ],
+   "tomas": [
+    {
+     "ms": 4909,
+     "ts": 1785832026438,
+     "pid": "p8ezt12",
+     "ses": null,
+     "tid": "ta2iu11",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "p8ezt12",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    }
+   ],
+   "sesiones": [],
+   "est": {
+    "pid": "p8ezt12",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "a6aw611",
+   "modo": "runner",
+   "nombre": "Runner ",
+   "area": "RBS",
+   "unidad": "tarea",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "p6aw612",
+     "nombre": "REPONER MATERIAL",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "p6aw613",
+     "nombre": "RETIRAR PRODUCTO ACABADO",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "p6aw614",
+     "nombre": "LLEVAR A PALETIZAR",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "p6aw615",
+     "nombre": "TRAER CAJAS VACIAS",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "p6aw616",
+     "nombre": "MOVER PALE CON TRANSPALETA",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "p6aw617",
+     "nombre": "ESPERA / SIN TAREA",
+     "grupo": "libre",
+     "uds": 1
+    }
+   ],
+   "tomas": [],
+   "sesiones": [],
+   "est": {
+    "pid": "p6aw612",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "attla26",
+   "modo": "runner",
+   "nombre": "Runner ",
+   "area": "AGV",
+   "unidad": "tarea",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "pttla27",
+     "nombre": "REPONER MATERIAL",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pttla28",
+     "nombre": "RETIRAR PRODUCTO ACABADO",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pttla29",
+     "nombre": "LLEVAR A PALETIZAR",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pttla30",
+     "nombre": "TRAER CAJAS VACIAS",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pttla31",
+     "nombre": "MOVER PALE CON TRANSPALETA",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pttla32",
+     "nombre": "ESPERA / SIN TAREA",
+     "grupo": "libre",
+     "uds": 1
+    }
+   ],
+   "tomas": [],
+   "sesiones": [],
+   "est": {
+    "pid": "pttla27",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "auhne33",
+   "modo": "secuencia",
+   "nombre": "Actividad nueva",
+   "area": "",
+   "unidad": "unidad",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "puhne34",
+     "nombre": "PASO 1",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "puhne35",
+     "nombre": "PASO 2",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "puhne36",
+     "nombre": "PASO 3",
+     "grupo": "bucle",
+     "uds": null
+    }
+   ],
+   "tomas": [],
+   "sesiones": [],
+   "est": {
+    "pid": "puhne34",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "auj9y37",
+   "modo": "runner",
+   "nombre": "Runner ",
+   "area": "RECE",
+   "unidad": "tarea",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "puj9y38",
+     "nombre": "REPONER MATERIAL",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "puj9y39",
+     "nombre": "RETIRAR PRODUCTO ACABADO",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "puj9y40",
+     "nombre": "LLEVAR A PALETIZAR",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "puj9y41",
+     "nombre": "TRAER CAJAS VACIAS",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "puj9y42",
+     "nombre": "MOVER PALE CON TRANSPALETA",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "puj9y43",
+     "nombre": "ESPERA / SIN TAREA",
+     "grupo": "libre",
+     "uds": 1
+    }
+   ],
+   "tomas": [],
+   "sesiones": [],
+   "est": {
+    "pid": "puj9y38",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "avjum44",
+   "modo": "runner",
+   "nombre": "Runner ",
+   "area": "EXP",
+   "unidad": "tarea",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "pvjum45",
+     "nombre": "REPONER MATERIAL",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pvjum46",
+     "nombre": "RETIRAR PRODUCTO ACABADO",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pvjum47",
+     "nombre": "LLEVAR A PALETIZAR",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pvjum48",
+     "nombre": "TRAER CAJAS VACIAS",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pvjum49",
+     "nombre": "MOVER PALE CON TRANSPALETA",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pvjum50",
+     "nombre": "ESPERA / SIN TAREA",
+     "grupo": "libre",
+     "uds": 1
+    }
+   ],
+   "tomas": [],
+   "sesiones": [],
+   "est": {
+    "pid": "pvjum45",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "aoj6h11",
+   "modo": "secuencia",
+   "nombre": "Grabar pale",
+   "area": "",
+   "unidad": "Pale",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "poj6h12",
+     "uds": null,
+     "grupo": "bucle",
+     "nombre": "1 pale"
+    },
+    {
+     "id": "poj6h13",
+     "uds": null,
+     "grupo": "bucle",
+     "nombre": "Moverse"
+    }
+   ],
+   "tomas": [
+    {
+     "ms": 17496.5,
+     "ts": 1787309168625,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tqcq915",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 5221.10000000149,
+     "ts": 1787309173848,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tqgrc16",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 1
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 45977.10000000149,
+     "ts": 1787309225942,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "trkye19",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 2
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 2553.099999997765,
+     "ts": 1787309228495,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "trmxb20",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 2
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 17628.89999999851,
+     "ts": 1787309246124,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "ts0j021",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 3
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1158.199999999255,
+     "ts": 1787309247283,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "ts1f722",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 3
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 10644.300000000745,
+     "ts": 1787309299050,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tt5d611",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 4
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 3683.10000000149,
+     "ts": 1787309302734,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tt87i12",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 4
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 12368.699999999255,
+     "ts": 1787309315103,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tthr313",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 5
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 13182.800000000745,
+     "ts": 1787309328285,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "ttrx914",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 5
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 24925.20000000298,
+     "ts": 1787309360604,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tugv018",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 6
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 2784.699999999255,
+     "ts": 1787309363388,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tuj0c19",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 6
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 10538.300000000745,
+     "ts": 1787309373927,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tur5320",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 7
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 3678.199999999255,
+     "ts": 1787309377605,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tutz921",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 7
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 13129.10000000149,
+     "ts": 1787309390734,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tv43y22",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 8
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 4170,
+     "ts": 1787309394904,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tv7bs23",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 8
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 11889.199999999255,
+     "ts": 1787309406794,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tvgi224",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 9
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 3034.39999999851,
+     "ts": 1787309409828,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tviuc25",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 9
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 26291.499999996275,
+     "ts": 1787309440369,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tw6ep26",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 10
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1582.8999999985099,
+     "ts": 1787309441952,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "tw7mo27",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 10
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 6019.900000002235,
+     "ts": 1787309447972,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "twc9w28",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 11
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1129.699999999255,
+     "ts": 1787309449101,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "twd5929",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 11
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1941.9000000022352,
+     "ts": 1787309451043,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "twen730",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 12
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1276.5,
+     "ts": 1787309452320,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "twfmo31",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 12
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 8713.5,
+     "ts": 1787309461033,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "twmcp32",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 13
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 4577.70000000298,
+     "ts": 1787309465611,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "twpvv33",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 13
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 8638.099999997765,
+     "ts": 1787309474249,
+     "pid": "poj6h12",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "twwjt34",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h12",
+      "lote": 1,
+      "ciclo": 14
+     },
+     "origen": "crono"
+    },
+    {
+     "ms": 1534.5,
+     "ts": 1787309475784,
+     "pid": "poj6h13",
+     "ses": "Sesión 1 · 21/08/2026 12:51",
+     "tid": "twxqg35",
+     "uds": 1,
+     "lote": 1,
+     "prev": {
+      "pid": "poj6h13",
+      "lote": 1,
+      "ciclo": 14
+     },
+     "origen": "crono"
+    }
+   ],
+   "sesiones": [
+    {
+     "id": "sxl6g36",
+     "uds": 14,
+     "fecha": "21/08/2026 12:45",
+     "tomas": 28,
+     "nombre": "Sesión 1 · 21/08/2026 12:51",
+     "corrido": 214697.5,
+     "asignado": 265769.1000000015
+    }
+   ],
+   "est": {
+    "pid": "poj6h12",
+    "ciclo": 15,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "amoin11",
+   "modo": "runner",
+   "nombre": "Runner · área nueva",
+   "area": "",
+   "unidad": "tarea",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "pmoin12",
+     "nombre": "REPONER MATERIAL",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pmoin13",
+     "nombre": "RETIRAR PRODUCTO ACABADO",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pmoin14",
+     "nombre": "LLEVAR A PALETIZAR",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pmoin15",
+     "nombre": "TRAER CAJAS VACIAS",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pmoin16",
+     "nombre": "MOVER PALE CON TRANSPALETA",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "pmoin17",
+     "nombre": "ESPERA / SIN TAREA",
+     "grupo": "libre",
+     "uds": 1
+    }
+   ],
+   "tomas": [
+    {
+     "pid": "pmoin13",
+     "ms": 3515.7000000178814,
+     "uds": 1,
+     "lote": 1,
+     "ts": 1787582789896,
+     "origen": "crono",
+     "ses": "Sesión 1 · 24/08/2026 16:46",
+     "tid": "tn09418",
+     "prev": {
+      "pid": "pmoin13",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pmoin15",
+     "ms": 3409,
+     "uds": 1,
+     "lote": 1,
+     "ts": 1787582793305,
+     "origen": "crono",
+     "ses": "Sesión 1 · 24/08/2026 16:46",
+     "tid": "tn2vt19",
+     "prev": {
+      "pid": "pmoin15",
+      "ciclo": 1,
+      "lote": 1
+     }
+    },
+    {
+     "pid": "pmoin12",
+     "ms": 2471.800000011921,
+     "uds": 1,
+     "lote": 1,
+     "ts": 1787582803663,
+     "origen": "crono",
+     "ses": "Sesión 1 · 24/08/2026 16:46",
+     "tid": "tnavj20",
+     "prev": {
+      "pid": "pmoin12",
+      "ciclo": 1,
+      "lote": 1
+     }
+    }
+   ],
+   "sesiones": [
+    {
+     "id": "snglv21",
+     "nombre": "Sesión 1 · 24/08/2026 16:46",
+     "fecha": "24/08/2026 16:46",
+     "corrido": 21957.90000000596,
+     "asignado": 9396.500000029802,
+     "tomas": 3,
+     "uds": 0
+    }
+   ],
+   "est": {
+    "pid": "pmoin17",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  }
+ ]
+}
