@@ -473,6 +473,7 @@
               <input type="password" id="fGhToken" placeholder="github_pat_…" spellcheck="false" autocapitalize="off">
             </div>
             <p class="gh-ayuda">El token se crea en GitHub → Settings → Developer settings → Fine-grained tokens, dándole permiso de <b>Contents: Read and write</b> sólo en este repositorio. Se guarda únicamente en este dispositivo, nunca se sube a ningún sitio.</p>
+            <p class="gh-ayuda" id="appVer"></p>
             <div class="gh-btns">
               <button class="btn" id="btnNubeConectar">Guardar estos datos de conexión</button>
               <button class="btn btn-gh" id="btnNubeSubir">Subir mis datos a la nube</button>
@@ -1754,12 +1755,60 @@ function construirInforme(d){
 
   // Copia para subir a GitHub: sin el token ni ningún dato de conexión.
   // GitHub bloquea cualquier archivo que contenga un token ("Secret detected in content").
+  /* ---- Limpieza a fondo: nada que parezca una clave sale de este dispositivo ----
+     GitHub rechaza cualquier archivo que contenga un token (push protection),
+     asi que el contenido se repasa entero antes de enviarlo. */
+  var APP_VER = "3.0 (sync verificado)";
+
+  var RE_SECRETOS = [
+    /github_pat_[A-Za-z0-9_]{20,}/,          // token fine-grained
+    /gh[pousr]_[A-Za-z0-9]{20,}/,            // tokens clasicos ghp_, gho_, ghu_, ghs_, ghr_
+    /AKIA[0-9A-Z]{16}/,                      // clave de AWS
+    /-----BEGIN [A-Z ]*PRIVATE KEY-----/     // clave privada
+  ];
+  function claveSospechosa(k){
+    return k === "gh" || /token|secret|secreto|clave|password|contrase|apikey|api_key/i.test(k);
+  }
+  function pareceSecreto(txt){
+    for(var i = 0; i < RE_SECRETOS.length; i++){
+      var m = String(txt).match(RE_SECRETOS[i]);
+      if(m) return m[0].slice(0, 12) + "\u2026";
+    }
+    return null;
+  }
+  // Copia limpia recorriendo todo el arbol de datos. Apunta en 'quitado' lo que ha eliminado.
+  function sinSecretos(v, ruta, quitado){
+    if(v === null || v === undefined) return v;
+    if(typeof v === "string"){
+      if(!pareceSecreto(v)) return v;
+      quitado.push(ruta);
+      var t = v;
+      for(var j = 0; j < RE_SECRETOS.length; j++)
+        t = t.replace(new RegExp(RE_SECRETOS[j].source, "g"), "(clave eliminada)");
+      return t;
+    }
+    if(typeof v !== "object") return v;
+    if(Object.prototype.toString.call(v) === "[object Array]"){
+      return v.map(function(x, i){ return sinSecretos(x, ruta + "[" + i + "]", quitado); });
+    }
+    var o = {};
+    for(var k in v){
+      if(!Object.prototype.hasOwnProperty.call(v, k)) continue;
+      if(claveSospechosa(k)){ quitado.push(ruta + "." + k); continue; }
+      o[k] = sinSecretos(v[k], ruta + "." + k, quitado);
+    }
+    return o;
+  }
+
+  // Texto exacto que se va a subir, ya comprobado.
+  function textoParaNube(){
+    var quitado = [];
+    var txt = JSON.stringify(sinSecretos(snapshot(), "datos", quitado), null, 1);
+    return {txt:txt, quitado:quitado, resto:pareceSecreto(txt)};
+  }
   function snapshotSinSecretos(){
-    var s = snapshot();
-    var cfg = {};
-    for(var k in s.cfg) if(k !== "gh") cfg[k] = s.cfg[k];
-    s.cfg = cfg;
-    return s;
+    var q = [];
+    return sinSecretos(snapshot(), "datos", q);
   }
 
   function descargarInforme(){
@@ -1891,9 +1940,16 @@ function construirInforme(d){
   // Un intento de escritura. incluirRama=false omite "branch" (algunos repos lo rechazan).
   function ghEscribir(sha, incluirRama){
     var g = ghCfg();
+    var prep = textoParaNube();
+    if(prep.resto){
+      // No se envia nada: antes de que GitHub lo rechace, lo paramos aqui.
+      return Promise.reject(new Error(
+        "Dentro de tus datos hay algo con pinta de clave (" + prep.resto + ") y no se sube nada.\n" +
+        "Bus\u00e1calo en los nombres de actividad, pasos o notas y b\u00f3rralo."));
+    }
     var cuerpo = {
       message: "Cronometro: datos " + fechaTxt(new Date()),
-      content: aBase64(JSON.stringify(snapshotSinSecretos(), null, 1))
+      content: aBase64(prep.txt)
     };
     if(sha) cuerpo.sha = sha;
     if(incluirRama !== false && g.rama) cuerpo.branch = g.rama;
@@ -1988,16 +2044,26 @@ function construirInforme(d){
     }
     if(/404/.test(m)) pistas.push("Comprueba el usuario y el nombre del repositorio, y que el token dé acceso a ese repositorio.");
     if(/Failed to fetch|NetworkError/i.test(m)) pistas.push("No hay conexión a internet en este momento.");
-    if(/secret detected/i.test(m)){
+    if(/secret detected|rule violations/i.test(m)){
       pistas.length = 0;
-      pistas.push("GitHub ha detectado una clave dentro del archivo y por eso lo rechaza.");
-      pistas.push("Esta versión ya no incluye el token en la copia. Si sigue saliendo, es que estás usando el archivo antiguo:");
-      pistas.push("sube el index.html nuevo y recarga con Ctrl+Shift+R.");
+      var prep = textoParaNube();
+      if(prep.resto){
+        pistas.push("Dentro de tus propios datos hay algo con pinta de clave (" + prep.resto + ").");
+        pistas.push("Est\u00e1 en: " + (prep.quitado.join(", ") || "alg\u00fan texto que has escrito t\u00fa") + ".");
+        pistas.push("B\u00f3rralo del nombre de la actividad, de los pasos o de las notas y vuelve a subir.");
+      } else {
+        pistas.push("Esta versi\u00f3n comprueba el contenido antes de enviarlo y NO lleva ninguna clave.");
+        pistas.push("Si GitHub lo sigue rechazando, tu navegador est\u00e1 usando el index.html ANTIGUO.");
+        pistas.push("Comprueba abajo la versi\u00f3n de la app: tiene que poner " + APP_VER + ".");
+        pistas.push("Arreglo: sube el index.html nuevo al repositorio y recarga con Ctrl+Shift+R.");
+        pistas.push("Adem\u00e1s: el token ya viajó al repositorio con la versi\u00f3n antigua. Rev\u00f3calo en GitHub y crea otro.");
+      }
     }
     else if(/409/.test(m)) pistas.push("Si el repositorio es nuevo y no tiene ningún archivo, créale primero un README desde GitHub.");
     alert("No se ha podido sincronizar con GitHub.\n\n" + m +
           (pistas.length ? "\n\n" + pistas.join("\n") : "") +
-          "\n\nArchivo: " + (g.user||"?") + "/" + (g.repo||"?") + " → " + GH_ARCHIVO + " (rama " + g.rama + ")" +
+          "\n\nVersi\u00f3n de la app: " + APP_VER +
+          "\nArchivo: " + (g.user||"?") + "/" + (g.repo||"?") + " \u2192 " + GH_ARCHIVO + " (rama " + g.rama + ")" +
           "\nToken: " + (g.token ? g.token.slice(0,10) + "… (" + g.token.length + " caracteres)" : "(vacío)"));
   }
 
@@ -2080,7 +2146,14 @@ function construirInforme(d){
         if(r.status === 404) L.push("4) Todav\u00eda no existe " + GH_ARCHIVO + ". Es normal la primera vez: se crear\u00e1 al subir.");
         else if(r.ok)        L.push("4) " + GH_ARCHIVO + " se lee sin problema.");
         else                 L.push("4) Al leer " + GH_ARCHIVO + ": HTTP " + r.status);
-        informe("TODO CORRECTO. El token puede leer y escribir en este repositorio.\nYa puedes pulsar 'Subir mis datos a la nube'.", "");
+        var prep = textoParaNube();
+        L.push("5) Contenido a subir: " + Math.round(prep.txt.length/1024) + " KB, " +
+               (prep.resto ? "CONTIENE ALGO CON PINTA DE CLAVE (" + prep.resto + ")" : "sin ninguna clave dentro") + ".");
+        L.push("6) Versi\u00f3n de la app: " + APP_VER);
+        if(prep.resto)
+          parar("HAY UNA CLAVE DENTRO DE TUS DATOS y GitHub no la va a aceptar.",
+                "Bus\u00e1cala y b\u00f3rrala de: " + (prep.quitado.join(", ") || "los textos que hayas escrito t\u00fa") + ".");
+        informe("TODO CORRECTO. El token puede leer y escribir, y el archivo que se sube no lleva ninguna clave.\nYa puedes pulsar 'Subir mis datos a la nube'.", "");
       })
       .catch(function(e){
         if(e === PARAR) return;
@@ -2392,6 +2465,7 @@ function construirInforme(d){
   $("btnNubeSubir").addEventListener("click", function(){ leerNubeCampos(); subirNube(false); });
   $("btnNubeBajar").addEventListener("click", function(){ leerNubeCampos(); traerNube(); });
   $("btnNubeDiag").addEventListener("click", diagNube);
+  (function(){ var e = $("appVer"); if(e) e.textContent = "Versi\u00f3n de la app: " + APP_VER + " \u00b7 si aqu\u00ed no pone esto, el navegador est\u00e1 usando un archivo antiguo (Ctrl+Shift+R)."; })();
   ["fGhUser","fGhRepo","fGhRama","fGhToken"].forEach(function(id){
     $(id).addEventListener("change", leerNubeCampos);
   });
