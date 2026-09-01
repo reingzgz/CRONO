@@ -1,0 +1,17 @@
+{
+  "name": "Cronómetro de operativas",
+  "short_name": "Tiempos",
+  "description": "Estudio de tiempos por pasos, con informe en Excel y sincronización por GitHub.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#E9EDF2",
+  "theme_color": "#1F3864",
+  "lang": "es",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

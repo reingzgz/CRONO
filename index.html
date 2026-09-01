@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cronómetro de operativas · estudio de tiempos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#1F3864">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Tiempos">
+<meta name="description" content="Cronometro de estudio de tiempos por pasos, con informe en Excel.">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.json">
+<style>
+  :root{
+    --paper:#E9EDF2; --panel:#FFFFFF; --ink:#0F2338; --ink-2:#5D6E80;
+    --line:#C7D2DE; --line-2:#E3E9F0;
+    --run:#E4610F; --run-soft:#FDF0E7;
+    --saved:#0E7C5A; --saved-soft:#E6F2EE;
+    --caja:#2C4B87; --caja-soft:#E8EDF7;
+    --shadow:0 1px 0 rgba(15,35,56,.06), 0 8px 24px -14px rgba(15,35,56,.35);
+    --mono:"JetBrains Mono", ui-monospace, "SF Mono", Consolas, monospace;
+    --cond:"Barlow Condensed", "Arial Narrow", Arial, sans-serif;
+    --body:"Barlow", -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:15px;
+       line-height:1.45;-webkit-font-smoothing:antialiased;padding:18px 16px 40px}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  .top{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+  .brand h1{font-family:var(--cond);font-weight:700;font-size:26px;letter-spacing:.06em;
+            text-transform:uppercase;margin:0;line-height:1}
+  .brand p{margin:4px 0 0;color:var(--ink-2);font-size:13px}
+  .brand p b{color:var(--caja)}
+  .counters{display:flex;gap:8px;align-items:stretch;flex-wrap:wrap}
+  .counter{background:var(--panel);border:1px solid var(--line);border-radius:3px;
+           padding:6px 12px;min-width:84px;box-shadow:var(--shadow)}
+  .counter span{display:block;font-family:var(--cond);font-size:11px;letter-spacing:.12em;
+                text-transform:uppercase;color:var(--ink-2)}
+  .counter strong{font-family:var(--mono);font-size:19px;font-weight:700;letter-spacing:-.02em}
+  .save{display:flex;flex-direction:column;justify-content:center;gap:3px;padding-left:4px}
+  .save small{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);text-align:center}
+
+  /* pestanas */
+  .tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:2px solid var(--line)}
+  .tab{font-family:var(--cond);font-weight:600;font-size:15px;letter-spacing:.08em;text-transform:uppercase;
+       background:transparent;border:0;border-bottom:3px solid transparent;margin-bottom:-2px;
+       padding:9px 18px;cursor:pointer;color:var(--ink-2)}
+  .tab:hover{color:var(--ink)}
+  .tab.on{color:var(--ink);border-bottom-color:var(--run)}
+  .tab:focus-visible{outline:3px solid var(--caja);outline-offset:-3px}
+  .vista{display:none}
+  .vista.on{display:block}
+
+  .grid{display:grid;grid-template-columns:1fr 300px;gap:16px;align-items:start}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:3px;box-shadow:var(--shadow)}
+  .panel-h{font-family:var(--cond);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+           color:var(--ink-2);padding:10px 14px;border-bottom:1px solid var(--line-2);
+           display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+  .clock{padding:20px 22px 22px;border-left:5px solid var(--run);position:relative}
+  .clock.idle{border-left-color:var(--line)}
+  .clock.paused{border-left-color:var(--ink-2)}
+  .eyebrow{font-family:var(--cond);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+  .step-now{display:flex;align-items:baseline;gap:12px;margin:2px 0 6px;flex-wrap:wrap}
+  .step-num{font-family:var(--mono);font-weight:700;font-size:22px;color:var(--run)}
+  .step-name{font-family:var(--cond);font-weight:600;font-size:clamp(21px,3.2vw,33px);
+             letter-spacing:.01em;text-transform:uppercase;line-height:1.05}
+  .tag{font-family:var(--cond);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+       padding:2px 7px;border-radius:2px;white-space:nowrap}
+  .tag.bucle{background:var(--run-soft);color:var(--run)}
+  .tag.inicio,.tag.cierre{background:var(--caja-soft);color:var(--caja)}
+  .readout{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums;
+           font-size:clamp(56px,13vw,104px);line-height:.95;letter-spacing:-.04em;color:var(--run);margin:6px 0 2px}
+  .clock.idle .readout,.clock.paused .readout{color:var(--ink)}
+  .readout .cs{font-size:.5em;color:var(--ink-2);font-weight:500}
+  .next{color:var(--ink-2);font-size:13px;margin-bottom:16px}
+  .next b{color:var(--ink);font-weight:600}
+
+  .btn{font-family:var(--cond);font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+       border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:3px;
+       padding:10px 14px;font-size:14px;cursor:pointer;
+       transition:background .12s ease,border-color .12s ease,transform .06s ease}
+  .btn:hover{background:#F3F6FA;border-color:var(--ink-2)}
+  .btn:active{transform:translateY(1px)}
+  .btn:focus-visible{outline:3px solid var(--caja);outline-offset:2px}
+  .btn[disabled]{opacity:.4;cursor:not-allowed}
+  .btn-main{width:100%;background:var(--run);border-color:var(--run);color:#fff;font-size:22px;
+            padding:18px 16px;letter-spacing:.1em;display:flex;align-items:center;justify-content:center;gap:12px}
+  .btn-main:hover{background:#C9540D;border-color:#C9540D}
+  .btn-main kbd,.btn-caja kbd{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:0;
+            border:1px solid rgba(255,255,255,.55);border-radius:2px;padding:2px 7px;text-transform:none}
+  .btn-main.start{background:var(--saved);border-color:var(--saved)}
+  .btn-main.start:hover{background:#0B6449;border-color:#0B6449}
+  .btn-row{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .btn-row .btn{flex:1;min-width:104px}
+  .btn-caja{width:100%;margin-top:8px;background:var(--caja-soft);border-color:var(--caja);color:var(--caja);
+            font-size:16px;padding:13px;display:flex;align-items:center;justify-content:center;gap:10px}
+  .btn-caja:hover{background:#DCE4F3}
+  .btn-caja kbd{border-color:var(--caja);opacity:.55}
+  .btn-caja.cerrando{background:var(--caja);color:#fff}
+  .btn-caja.cerrando kbd{border-color:rgba(255,255,255,.55)}
+  .btn-save{background:var(--ink);border-color:var(--ink);color:#fff;font-size:15px;padding:9px 20px}
+  .btn-save:hover{background:#20405F;border-color:#20405F}
+  .btn-save.sucio{background:var(--run);border-color:var(--run)}
+  .btn-xlsx{background:var(--saved);border-color:var(--saved);color:#fff;font-size:16px;padding:13px}
+  .btn-xlsx:hover{background:#0B6449;border-color:#0B6449}
+
+  .strip{padding:14px 22px 18px;border-top:1px solid var(--line-2)}
+  .strip-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .strip small{color:var(--ink-2);font-size:12px;font-family:var(--mono)}
+  .tally{display:flex;flex-wrap:wrap;gap:3px;min-height:18px}
+  .tally i{display:block;width:13px;height:18px;background:var(--run);border-radius:1px}
+  .tally i.now{background:transparent;border:1px dashed var(--run)}
+  .tally i.pre{background:var(--line-2)}
+  .strip-foot{margin-top:9px;font-size:12.5px;color:var(--ink-2)}
+  .strip-foot b{color:var(--caja)}
+
+  .chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(184px,1fr));gap:6px;padding:12px}
+  .chip{display:flex;align-items:center;gap:8px;text-align:left;border:1px solid var(--line);
+        background:var(--panel);border-radius:3px;padding:7px 9px;cursor:pointer;
+        font-family:var(--body);font-size:12.5px;color:var(--ink)}
+  .chip:hover{border-color:var(--ink-2);background:#F3F6FA}
+  .chip:focus-visible{outline:3px solid var(--caja);outline-offset:2px}
+  .chip b{font-family:var(--mono);font-size:12px;color:var(--ink-2);flex:none}
+  .chip .nm{flex:1;line-height:1.15}
+  .chip .ct{font-family:var(--mono);font-size:11px;color:var(--ink-2);flex:none}
+  .chip.on{border-color:var(--run);background:var(--run-soft)}
+  .chip.on b{color:var(--run)}
+  .chip.inicio,.chip.cierre{border-left:3px solid var(--caja)}
+  .chip.bucle{border-left:3px solid var(--run)}
+
+  .log{max-height:430px;overflow:auto}
+  .log-row{display:flex;align-items:center;gap:9px;padding:7px 14px;border-bottom:1px solid var(--line-2);
+           font-size:12.5px;animation:stamp .22s ease-out}
+  @keyframes stamp{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+  .log-row b{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);flex:none;width:18px}
+  .log-row .nm{flex:1;color:var(--ink-2);line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .log-row .t{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums;flex:none}
+  .log-row.inicio,.log-row.cierre{background:var(--caja-soft)}
+  .log-row.hist{opacity:.62}
+  .log-row .hi{font-family:var(--cond);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+               color:var(--caja);background:var(--caja-soft);border-radius:2px;padding:1px 5px;flex:none}
+  .empty{padding:26px 16px;text-align:center;color:var(--ink-2);font-size:13px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{padding:7px 12px;border-bottom:1px solid var(--line-2);text-align:right}
+  th{font-family:var(--cond);font-size:11px;letter-spacing:.1em;text-transform:uppercase;
+     color:var(--ink-2);font-weight:600;white-space:nowrap}
+  th:first-child,td:first-child{text-align:left}
+  td.n,th.n{font-family:var(--mono);font-variant-numeric:tabular-nums}
+  tr.sin td{color:#A6B2BF}
+  tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:none;background:#F5F8FB}
+  .pill{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:2px}
+  .pill.ok{background:var(--saved-soft);color:var(--saved)}
+  .pill.pocas{background:#FDF6E3;color:#946200}
+
+  .rowcols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px}
+  .fields{padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .field{display:flex;flex-direction:column;gap:3px}
+  .field label{font-family:var(--cond);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+  .field input,.field select{font-family:var(--mono);font-size:14px;padding:7px 9px;border:1px solid var(--line);
+                             border-radius:3px;background:#FBFCFE;color:var(--ink);width:100%}
+  .field input:focus,.field select:focus{outline:2px solid var(--caja);outline-offset:0}
+  .check{display:flex;align-items:flex-start;gap:8px;grid-column:1/-1;font-size:13px;color:var(--ink-2)}
+  .check input{margin-top:3px;width:16px;height:16px;accent-color:var(--run);flex:none}
+  .exp{padding:12px 14px;display:flex;flex-direction:column;gap:9px}
+  .exp .btn{width:100%}
+  .exp p{margin:0;font-size:12.5px;color:var(--ink-2)}
+  .exp textarea{font-family:var(--mono);font-size:13px;padding:8px 9px;border:1px solid var(--line);
+                border-radius:3px;background:#FBFCFE;color:var(--ink);width:100%;resize:vertical}
+  .exp textarea:focus{outline:2px solid var(--caja);outline-offset:0}
+
+  /* editor de pasos */
+  .ed{padding:14px}
+  .ed-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-bottom:14px}
+  .ed table{font-size:13.5px}
+  .ed th,.ed td{text-align:left;padding:5px 6px;border-bottom:1px solid var(--line-2)}
+  .ed input,.ed select{font-family:var(--body);font-size:13.5px;padding:6px 8px;border:1px solid var(--line);
+                       border-radius:3px;background:#FBFCFE;color:var(--ink);width:100%}
+  .ed input.num{font-family:var(--mono);text-align:center}
+  .ed input:focus,.ed select:focus{outline:2px solid var(--caja);outline-offset:0}
+  .ed .ord{font-family:var(--mono);font-weight:700;color:var(--ink-2);text-align:center;width:34px}
+  .mini{border:1px solid var(--line);background:var(--panel);border-radius:3px;cursor:pointer;
+        font-family:var(--mono);font-size:12px;line-height:1;padding:5px 7px;color:var(--ink-2)}
+  .mini:hover{border-color:var(--ink-2);color:var(--ink);background:#F3F6FA}
+  .mini.del:hover{border-color:#C0392B;color:#C0392B;background:#FDF0EE}
+  .mini:focus-visible{outline:3px solid var(--caja);outline-offset:1px}
+  .ed .acc{white-space:nowrap;width:96px;text-align:right}
+  .ed-foot{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .aviso{background:var(--caja-soft);border-left:3px solid var(--caja);padding:10px 13px;
+         font-size:13px;color:var(--ink);margin-top:14px}
+  .aviso b{color:var(--caja)}
+
+  /* ---------- panel de runner ---------- */
+  .tareas{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;padding:12px}
+  .tarea{
+    position:relative;display:flex;flex-direction:column;gap:5px;text-align:left;
+    border:1px solid var(--line);background:var(--panel);border-radius:3px;
+    padding:12px 12px 10px;cursor:pointer;font-family:var(--body);color:var(--ink);
+    min-height:74px;transition:border-color .1s ease,background .1s ease,transform .06s ease
+  }
+  .tarea:hover{border-color:var(--ink-2);background:#F3F6FA}
+  .tarea:active{transform:translateY(1px)}
+  .tarea:focus-visible{outline:3px solid var(--caja);outline-offset:2px}
+  .tarea .nm{font-family:var(--cond);font-weight:600;font-size:16px;letter-spacing:.02em;
+    text-transform:uppercase;line-height:1.1}
+  .tarea .dat{display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:11.5px;color:var(--ink-2)}
+  .tarea .pct{font-weight:700;color:var(--ink)}
+  .tarea .sub{height:3px;background:var(--line-2);border-radius:2px;overflow:hidden}
+  .tarea .sub i{display:block;height:100%;background:var(--run)}
+  .tarea.on{border-color:var(--run);background:var(--run-soft);border-width:2px;padding:11px 11px 9px}
+  .tarea.on .nm{color:var(--run)}
+  .tarea.espera{border-left:3px solid var(--caja)}
+  .rn-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .rn-head select{font-family:var(--body);font-size:13px;padding:6px 8px;border:1px solid var(--line);
+    border-radius:3px;background:#FBFCFE;color:var(--ink);min-width:170px}
+  .oculto{display:none !important}
+  .gh-fila{display:grid;grid-template-columns:1.2fr 1.2fr .7fr;gap:8px}
+  .gh-ayuda{font-size:12px;color:var(--ink-2);margin:2px 0 4px}
+  .gh-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .gh-btns .btn{flex:1;min-width:150px}
+  .btn-gh{background:var(--run);border-color:var(--run);color:#fff}
+  .btn-gh:hover{background:#C9540D;border-color:#C9540D}
+  @media (max-width:620px){ .gh-fila{grid-template-columns:1fr} }
+
+  /* ---------- tiempo corrido ---------- */
+  .run{padding:16px 22px 18px;border-top:1px solid var(--line-2)}
+  .run-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  .run-clock{font-family:var(--mono);font-weight:700;font-variant-numeric:tabular-nums;
+    font-size:34px;letter-spacing:-.03em;color:var(--caja);line-height:1}
+  .run-clock.off{color:var(--ink-2)}
+  .bar{display:flex;height:22px;border-radius:2px;overflow:hidden;margin:11px 0 7px;background:var(--line-2)}
+  .bar i{display:block;height:100%}
+  .bar .asig{background:var(--run)}
+  .bar .sin{background:repeating-linear-gradient(45deg,#B9C6D6,#B9C6D6 5px,#CBD5E1 5px,#CBD5E1 10px)}
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-2)}
+  .legend span{display:flex;align-items:center;gap:6px}
+  .legend b{font-family:var(--mono);color:var(--ink)}
+  .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .dot.a{background:var(--run)}
+  .dot.s{background:#C3CEDB}
+  .run-row{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap;align-items:flex-end}
+  .run-row .btn{flex:1;min-width:120px}
+  .run-field{display:flex;flex-direction:column;gap:3px;min-width:130px}
+  .run-field label{font-family:var(--cond);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-2)}
+  .run-field input{font-family:var(--mono);font-size:14px;padding:8px 9px;border:1px solid var(--line);
+    border-radius:3px;background:#FBFCFE;color:var(--ink);width:100%}
+  .btn-ses{background:var(--caja);border-color:var(--caja);color:#fff}
+  .btn-ses:hover{background:#223C6E;border-color:#223C6E}
+  .mini{font-size:12px;color:var(--ink-2);margin-top:8px}
+  .mini b{color:var(--ink)}
+  .toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--ink);color:#fff;
+         font-size:13.5px;padding:11px 18px;border-radius:3px;box-shadow:0 10px 30px -10px rgba(15,35,56,.6);
+         opacity:0;pointer-events:none;transition:opacity .2s ease,transform .2s ease;z-index:20;max-width:90vw}
+  .toast.on{opacity:1;transform:translateX(-50%) translateY(-4px)}
+  .foot{margin-top:18px;color:var(--ink-2);font-size:12.5px;line-height:1.6}
+  .foot kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--line);background:var(--panel);
+            border-radius:2px;padding:1px 6px}
+
+  @media (max-width:1080px){ .rowcols{grid-template-columns:1fr} .ed-top{grid-template-columns:1fr 1fr} }
+  @media (max-width:900px){ .grid{grid-template-columns:1fr} .log{max-height:260px} }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <h1>Cronómetro de operativas</h1>
+      <p>Midiendo: <b id="actNombre">—</b></p>
+    </div>
+    <div class="counters">
+      <div class="counter"><span id="lblLote">Lote</span><strong id="cCaja">1</strong></div>
+      <div class="counter"><span id="lblCiclo">Ciclo</span><strong id="cBolsa">1</strong></div>
+      <div class="counter"><span>Tomas</span><strong id="cTomas">0</strong></div>
+      <div class="counter"><span id="lblSeg">Seg / ud</span><strong id="cSeg">—</strong></div>
+      <div class="save">
+        <button class="btn btn-save" id="btnSave">Guardar</button>
+        <small id="saveInfo">sin tomas</small>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" id="tabCrono" data-v="crono">Cronómetro</button>
+    <button class="tab" id="tabSes" data-v="ses">Tiempo corrido</button>
+    <button class="tab" id="tabAct" data-v="act">Actividad y pasos</button>
+  </div>
+
+  <!-- ================= VISTA CRONOMETRO ================= -->
+  <div class="vista on" id="vCrono">
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <div class="clock idle" id="clock">
+            <div class="eyebrow">Midiendo ahora</div>
+            <div class="step-now">
+              <span class="step-num" id="stepNum">01</span>
+              <span class="step-name" id="stepName">—</span>
+              <span class="tag bucle" id="stepTag">—</span>
+            </div>
+            <div class="readout" id="readout">0:00<span class="cs">,00</span></div>
+            <div class="next">Siguiente: <b id="nextName">—</b></div>
+
+            <button class="btn btn-main start" id="btnMain">Empezar<kbd>espacio</kbd></button>
+            <button class="btn btn-caja" id="btnCaja">Cerrar lote<kbd>C</kbd></button>
+            <div class="btn-row">
+              <button class="btn" id="btnPause" disabled>Pausar</button>
+              <button class="btn" id="btnUndo" disabled>Deshacer</button>
+              <button class="btn" id="btnSkip" disabled>Saltar paso</button>
+              <button class="btn" id="btnCero" disabled>Poner a 0 el crono</button>
+            </div>
+          </div>
+
+          <div class="panel-h oculto" id="runnerHead" style="border-top:1px solid var(--line-2)">
+            <span class="rn-head">
+              <span>Tareas del runner</span>
+              <select id="selRunner"></select>
+            </span>
+            <span id="runnerInfo">—</span>
+          </div>
+          <div class="tareas oculto" id="tareas"></div>
+          <div class="strip-foot oculto" id="runnerPie" style="padding:0 22px 16px">
+            Pulsa la tarea que empieza: se guarda sola la anterior y el reloj sigue corriendo.
+          </div>
+
+          <div class="strip" id="stripPanel">
+            <div class="strip-head">
+              <span class="eyebrow" id="stripTitulo">Ciclos de este lote</span>
+              <small id="stripInfo">0 ciclos</small>
+            </div>
+            <div class="tally" id="tally"></div>
+            <div class="strip-foot" id="stripFoot">—</div>
+          </div>
+
+          <div class="run">
+            <div class="run-top">
+              <span class="eyebrow">Tiempo corrido de la sesión</span>
+              <span class="run-clock off" id="runClock">0:00:00</span>
+            </div>
+            <div class="bar"><i class="asig" id="barAsig" style="width:0%"></i><i class="sin" id="barSin" style="width:0%"></i></div>
+            <div class="legend">
+              <span><i class="dot a"></i> Medido en pasos <b id="lgAsig">0:00</b> <b id="lgAsigPct">0%</b></span>
+              <span><i class="dot s"></i> Sin asignar <b id="lgSin">0:00</b> <b id="lgSinPct">0%</b></span>
+            </div>
+            <div class="run-row">
+              <button class="btn" id="btnSes">Parar sesión</button>
+              <button class="btn btn-ses" id="btnCerrarSes">Cerrar y guardar sesión</button>
+              <div class="run-field">
+                <label for="fUdsReales">Unidades producidas</label>
+                <input type="number" id="fUdsReales" min="0" step="1" placeholder="auto">
+              </div>
+            </div>
+            <div class="mini" id="runNota">El reloj corrido sigue contando aunque pauses entre pasos: esa diferencia es el tiempo sin asignar.</div>
+          </div>
+        </div>
+
+        <div class="panel" id="chipsPanel" style="margin-top:16px">
+          <div class="panel-h">
+            <span>Pasos · clic para corregir el que estás midiendo</span>
+            <span>bucle en naranja · lote en azul</span>
+          </div>
+          <div class="chips" id="chips"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><span>Tomas</span><span id="logCount">0</span></div>
+        <div class="log" id="log"></div>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h"><span>Media por paso</span><span>se actualiza en cada toma</span></div>
+      <table>
+        <thead><tr>
+          <th>Paso</th><th class="n">Tomas</th><th class="n">Media (s)</th>
+          <th class="n" id="thSegUd">Seg / ud</th><th class="n" id="thUdH">Uds / h</th>
+          <th class="n">% del tiempo</th><th>Estado</th>
+        </tr></thead>
+        <tbody id="resBody"></tbody>
+        <tfoot><tr>
+          <td>Total actividad</td><td class="n" id="fTomas">0</td><td class="n">—</td>
+          <td class="n" id="fSeg">—</td><td class="n" id="fPh">—</td><td class="n">100%</td><td></td>
+        </tr></tfoot>
+      </table>
+    </div>
+
+    <div class="rowcols">
+      <div class="panel">
+        <div class="panel-h"><span>Ajustes económicos</span></div>
+        <div class="fields">
+          <div class="field">
+            <label for="fCoste">Coste operario (€/hora)</label>
+            <input type="number" id="fCoste" min="0" step="0.5" value="12">
+          </div>
+          <div class="field">
+            <label for="fSupl">Suplementos (%)</label>
+            <input type="number" id="fSupl" min="0" step="1" value="18">
+          </div>
+          <label class="check">
+            <input type="checkbox" id="fSound" checked>
+            <span>Pitido corto al guardar cada toma, para no tener que mirar la pantalla.</span>
+          </label>
+          <label class="check">
+            <span>Las unidades por toma de cada paso se definen en la pestaña <b>Actividad y pasos</b>.</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><span>Histórico</span><span id="histInfo">0 tomas</span></div>
+        <div class="exp">
+          <p>Une aquí mediciones anteriores. Una línea por toma: paso, tiempo y unidades.</p>
+          <textarea id="impTxt" rows="3" placeholder="2&#9;1,52&#9;2&#10;5&#9;18,43&#9;2"></textarea>
+          <button class="btn" id="btnImp">Añadir estas tomas</button>
+          <button class="btn" id="btnImpQuitar">Quitar las añadidas a mano</button>
+          <button class="btn" id="btnReset" style="border-color:#D9A0A0;color:#9C2B2B">Borrar las tomas de esta actividad</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-h"><span>Informe</span></div>
+        <div class="exp">
+          <button class="btn btn-xlsx" id="btnXlsx">Descargar informe Excel</button>
+          <p>Dos hojas: <b>INFORME</b> con el tiempo, las unidades/hora y el coste por unidad, y <b>TOMAS</b> con la base de datos más 300 filas libres. Si escribes tomas nuevas en TOMAS, el informe se recalcula solo.</p>
+          <button class="btn" id="btnCopy">Copiar tomas para pegar</button>
+          <button class="btn" id="btnCsv">Descargar CSV</button>
+          <div class="field">
+            <label for="fDec">Separador decimal</label>
+            <select id="fDec">
+              <option value="," selected>Coma — Excel en español</option>
+              <option value=".">Punto — Excel en inglés</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="panel">
+        <div class="panel-h"><span>Sincronización online</span><span id="nubeEstado">sin conectar</span></div>
+        <div class="exp">
+          <p id="nubeInfo">Guarda una copia de los datos de este dispositivo en tu propio repositorio de GitHub (en un archivo <b>sync/datos.json</b>), para poder traerla a otro equipo o móvil. No hace falta contratar ningún servidor: se usa tu cuenta de GitHub.</p>
+          <div id="wrapNubeManual">
+            <div class="gh-fila">
+              <div class="field">
+                <label for="fGhUser">Usuario/organización</label>
+                <input type="text" id="fGhUser" placeholder="reingzgz" spellcheck="false" autocapitalize="off">
+              </div>
+              <div class="field">
+                <label for="fGhRepo">Repositorio</label>
+                <input type="text" id="fGhRepo" placeholder="cronometro" spellcheck="false" autocapitalize="off">
+              </div>
+              <div class="field">
+                <label for="fGhRama">Rama</label>
+                <input type="text" id="fGhRama" placeholder="main" spellcheck="false" autocapitalize="off">
+              </div>
+            </div>
+            <div class="field">
+              <label for="fGhToken">Token de GitHub (con permiso de lectura/escritura de contenidos de este repositorio)</label>
+              <input type="password" id="fGhToken" placeholder="github_pat_…" spellcheck="false" autocapitalize="off">
+            </div>
+            <p class="gh-ayuda">El token se crea en GitHub → Settings → Developer settings → Fine-grained tokens, dándole permiso de <b>Contents: Read and write</b> sólo en este repositorio. Se guarda únicamente en este dispositivo, nunca se sube a ningún sitio.</p>
+            <div class="gh-btns">
+              <button class="btn" id="btnNubeConectar">Guardar estos datos de conexión</button>
+              <button class="btn btn-gh" id="btnNubeSubir">Subir mis datos a la nube</button>
+              <button class="btn" id="btnNubeBajar">Traer datos de la nube</button>
+            </div>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="fNubeAuto">
+            <span>Subir los cambios automáticamente mientras mido (si lo dejas sin marcar, subes tú cuando quieras).</span>
+          </label>
+          <p>Al traer, lo de la nube y lo de aquí <b>se combinan</b> sin perder tomas.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= VISTA ACTIVIDAD ================= -->
+  <!-- ================= VISTA TIEMPO CORRIDO ================= -->
+  <div class="vista" id="vSes">
+    <div class="panel">
+      <div class="panel-h"><span>Visión general · sesión en curso</span><span id="sesEstado">sin arrancar</span></div>
+      <div class="run">
+        <div class="run-top">
+          <span class="eyebrow">Reloj corrido</span>
+          <span class="run-clock off" id="runClock2">0:00:00</span>
+        </div>
+        <div class="bar"><i class="asig" id="barAsig2" style="width:0%"></i><i class="sin" id="barSin2" style="width:0%"></i></div>
+        <div class="legend">
+          <span><i class="dot a"></i> Medido en pasos <b id="lgAsig2">0:00</b></span>
+          <span><i class="dot s"></i> Sin asignar <b id="lgSin2">0:00</b></span>
+          <span>Ritmo real <b id="lgRitmo">—</b></span>
+        </div>
+      </div>
+      <div style="padding:0 22px 18px">
+        <table>
+          <thead><tr>
+            <th>Paso</th><th class="n">Tomas</th><th class="n">Tiempo total</th>
+            <th class="n">% del corrido</th><th>Reparto</th>
+          </tr></thead>
+          <tbody id="repBody"></tbody>
+          <tfoot><tr>
+            <td>Sin asignar (pausas y no medido)</td><td class="n">—</td>
+            <td class="n" id="repSin">—</td><td class="n" id="repSinPct">—</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h"><span>Sesiones guardadas</span><span id="sesCount">0</span></div>
+      <table>
+        <thead><tr>
+          <th>Sesión</th><th>Fecha</th><th class="n">Tomas</th><th class="n">Corrido</th>
+          <th class="n">Sin asignar</th><th class="n">Unidades</th><th class="n">Uds / h reales</th><th></th>
+        </tr></thead>
+        <tbody id="sesBody"></tbody>
+      </table>
+      <div class="exp" style="padding:14px 22px 18px">
+        <p>Al cerrar una sesión, sus tomas se quedan en la actividad y la sesión pasa a esta lista con su tiempo corrido. El informe Excel las incluye todas en una hoja aparte.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="vista" id="vAct">
+    <div class="panel">
+      <div class="panel-h">
+        <span>Actividad</span>
+        <span id="actInfo">—</span>
+      </div>
+      <div class="ed">
+        <div class="ed-top">
+          <div class="field">
+            <label for="selAct">Actividad que estás midiendo</label>
+            <select id="selAct"></select>
+          </div>
+          <div class="field">
+            <label for="fActNombre">Nombre</label>
+            <input type="text" id="fActNombre" placeholder="Confección · empaquetado">
+          </div>
+          <div class="field">
+            <label for="fUnidad">Nombre de la unidad</label>
+            <input type="text" id="fUnidad" placeholder="prenda">
+          </div>
+          <div class="field">
+            <label for="fModo">Tipo de medición</label>
+            <select id="fModo">
+              <option value="secuencia">Secuencia · pasos en orden</option>
+              <option value="runner">Runner · tareas sueltas</option>
+            </select>
+          </div>
+          <div class="field" id="wrapArea">
+            <label for="fArea">Área o zona</label>
+            <input type="text" id="fArea" placeholder="Almacén, línea 2…">
+          </div>
+          <div class="field" id="wrapUds">
+            <label for="fUdsCiclo">Uds por ciclo · por lote</label>
+            <div style="display:flex;gap:6px">
+              <input type="number" id="fUdsCiclo" min="1" step="1" class="num" title="Unidades que cubre una toma de un paso del bucle">
+              <input type="number" id="fUdsLote" min="1" step="1" class="num" title="Unidades que cubre una toma de un paso de inicio o cierre">
+            </div>
+          </div>
+        </div>
+
+        <table>
+          <thead><tr>
+            <th class="ord">Nº</th><th>Nombre del paso</th><th style="width:150px">Cuándo se hace</th>
+            <th style="width:120px">Uds por toma</th><th style="width:70px">Tomas</th><th class="acc">Mover</th>
+          </tr></thead>
+          <tbody id="edBody"></tbody>
+        </table>
+
+        <div class="ed-foot">
+          <button class="btn" id="btnAddPaso">Añadir paso</button>
+          <button class="btn" id="btnNuevaAct">Nueva actividad</button>
+          <button class="btn" id="btnNuevoRunner">Nuevo runner</button>
+          <button class="btn" id="btnDupAct">Duplicar esta</button>
+          <button class="btn" id="btnDelAct" style="border-color:#D9A0A0;color:#9C2B2B">Borrar actividad</button>
+        </div>
+
+        <div class="aviso">
+          <b>Bucle:</b> los pasos que se repiten en cada ciclo (una bolsa, una pieza…). El cronómetro gira por ellos sin parar.<br>
+          <b>Inicio:</b> se hacen una vez al empezar cada lote. <b>Cierre:</b> una vez al terminarlo, cuando pulsas Cerrar lote.<br>
+          El recorrido es: inicio → bucle, bucle, bucle… → cierre → inicio del lote siguiente.<br>
+          Deja las <b>uds por toma</b> en blanco para usar el valor por defecto del grupo (arriba a la derecha).
+        </div>
+      </div>
+    </div>
+
+    <div class="rowcols" style="grid-template-columns:1fr 1fr">
+      <div class="panel">
+        <div class="panel-h"><span>Guardar y recuperar</span></div>
+        <div class="exp">
+          <p>Todo se guarda solo según cronometras y se conserva al cerrar la pestaña. Este botón es solo para confirmarlo.</p>
+          <button class="btn btn-save" id="btnSave2" style="width:100%">Guardar todo</button>
+          <button class="btn" id="btnDescargar">Descargar copia .json</button>
+          <button class="btn" id="btnRestaurar">Restaurar desde una copia</button>
+          <input type="file" id="fileRest" accept=".json,application/json" style="display:none">
+          <p>La copia <b>.json</b> es un extra para archivar o migrar: solo se descarga cuando tú lo pides.</p>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><span>Cómo se usa</span></div>
+        <div class="exp">
+          <p>Cada actividad guarda sus propios pasos y sus propias tomas. Cambiar de actividad no mezcla nada.</p>
+          <p>Si reordenas o renombras un paso, las tomas ya registradas siguen pegadas a ese paso: no se descolocan.</p>
+          <p>Al borrar un paso que tiene tomas, se borran también sus tomas, y te lo pregunta antes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="foot" id="pieAtajos"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ generador de xlsx sin librerias: zip almacenado + ooxml ============ */
+var XLS = (function(){
+  var enc = function(s){ return new TextEncoder().encode(s); };
+
+  var CRCT = (function(){
+    var t = new Int32Array(256), c, n, k;
+    for(n=0;n<256;n++){ c=n; for(k=0;k<8;k++){ c = (c&1) ? (0xEDB88320 ^ (c>>>1)) : (c>>>1); } t[n]=c; }
+    return t;
+  })();
+  function crc32(b){
+    var c = -1;
+    for(var i=0;i<b.length;i++) c = CRCT[(c ^ b[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ -1) >>> 0;
+  }
+
+  function zip(files){
+    var parts = [], cen = [], off = 0, total = 0, i;
+    files.forEach(function(f){
+      var data = enc(f.body), name = enc(f.name), crc = crc32(data);
+      var lh = new Uint8Array(30 + name.length), d = new DataView(lh.buffer);
+      d.setUint32(0, 0x04034b50, true); d.setUint16(4, 20, true); d.setUint16(6, 0x0800, true);
+      d.setUint16(8, 0, true); d.setUint16(10, 0, true); d.setUint16(12, 0x21, true);
+      d.setUint32(14, crc, true); d.setUint32(18, data.length, true); d.setUint32(22, data.length, true);
+      d.setUint16(26, name.length, true); d.setUint16(28, 0, true);
+      lh.set(name, 30);
+      parts.push(lh, data);
+
+      var ch = new Uint8Array(46 + name.length), e = new DataView(ch.buffer);
+      e.setUint32(0, 0x02014b50, true); e.setUint16(4, 20, true); e.setUint16(6, 20, true);
+      e.setUint16(8, 0x0800, true); e.setUint16(10, 0, true); e.setUint16(12, 0, true);
+      e.setUint16(14, 0x21, true); e.setUint32(16, crc, true);
+      e.setUint32(20, data.length, true); e.setUint32(24, data.length, true);
+      e.setUint16(28, name.length, true); e.setUint16(30, 0, true); e.setUint16(32, 0, true);
+      e.setUint16(34, 0, true); e.setUint16(36, 0, true); e.setUint32(38, 0, true);
+      e.setUint32(42, off, true);
+      ch.set(name, 46);
+      cen.push(ch);
+      off += lh.length + data.length;
+    });
+    var cenSize = 0;
+    cen.forEach(function(c){ cenSize += c.length; });
+    var eo = new Uint8Array(22), v = new DataView(eo.buffer);
+    v.setUint32(0, 0x06054b50, true); v.setUint16(4, 0, true); v.setUint16(6, 0, true);
+    v.setUint16(8, files.length, true); v.setUint16(10, files.length, true);
+    v.setUint32(12, cenSize, true); v.setUint32(16, off, true); v.setUint16(20, 0, true);
+
+    for(i=0;i<parts.length;i++) total += parts[i].length;
+    total += cenSize + 22;
+    var out = new Uint8Array(total), p = 0;
+    parts.forEach(function(a){ out.set(a, p); p += a.length; });
+    cen.forEach(function(a){ out.set(a, p); p += a.length; });
+    out.set(eo, p);
+    return out;
+  }
+
+  function esc(s){
+    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+                    .replace(/"/g,"&quot;");
+  }
+  function colName(i){
+    var s = "";
+    while(i > 0){ var m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); }
+    return s;
+  }
+  function num(v){ return Number(v.toFixed(6)); }
+
+  // celda: {t:"s"|"n"|"f", v:valor, f:formula, s:estilo}
+  function cel(col, row, c){
+    var ref = colName(col) + row, s = c.s ? ' s="' + c.s + '"' : "";
+    if(c.t === "s") return '<c r="' + ref + '"' + s + ' t="inlineStr"><is><t xml:space="preserve">' + esc(c.v) + '</t></is></c>';
+    if(c.t === "f") return '<c r="' + ref + '"' + s + '><f>' + esc(c.f) + '</f><v>' + num(c.v) + '</v></c>';
+    if(c.t === "fs") return '<c r="' + ref + '"' + s + ' t="str"><f>' + esc(c.f) + '</f><v>' + esc(c.v) + '</v></c>';
+    if(c.v === null || c.v === undefined || c.v === "") return '<c r="' + ref + '"' + s + '/>';
+    return '<c r="' + ref + '"' + s + '><v>' + num(c.v) + '</v></c>';
+  }
+  function hoja(filas, cols){
+    var x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      '<sheetViews><sheetView showGridLines="0" workbookViewId="0"/></sheetViews>' +
+      '<sheetFormatPr defaultRowHeight="14.5"/>';
+    if(cols && cols.length){
+      x += "<cols>";
+      cols.forEach(function(w, i){ x += '<col min="' + (i+1) + '" max="' + (i+1) + '" width="' + w + '" customWidth="1"/>'; });
+      x += "</cols>";
+    }
+    x += "<sheetData>";
+    filas.forEach(function(f, i){
+      if(!f || !f.length) return;
+      var r = i + 1, cs = "";
+      f.forEach(function(c, j){ if(c) cs += cel(j + 1, r, c); });
+      if(cs) x += '<row r="' + r + '">' + cs + "</row>";
+    });
+    x += "</sheetData></worksheet>";
+    return x;
+  }
+
+  var STYLES = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<numFmts count="6">' +
+      '<numFmt numFmtId="164" formatCode="0.00"/>' +
+      '<numFmt numFmtId="165" formatCode="0.000"/>' +
+      '<numFmt numFmtId="166" formatCode="0.0%"/>' +
+      '<numFmt numFmtId="167" formatCode="0.0000&quot; €&quot;"/>' +
+      '<numFmt numFmtId="168" formatCode="#,##0.00&quot; €&quot;"/>' +
+      '<numFmt numFmtId="169" formatCode="#,##0"/>' +
+    '</numFmts>' +
+    '<fonts count="6">' +
+      '<font><sz val="10"/><name val="Arial"/></font>' +
+      '<font><b/><sz val="10"/><name val="Arial"/></font>' +
+      '<font><b/><sz val="14"/><color rgb="FF1F3864"/><name val="Arial"/></font>' +
+      '<font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Arial"/></font>' +
+      '<font><b/><sz val="10"/><color rgb="FF0000FF"/><name val="Arial"/></font>' +
+      '<font><i/><sz val="9"/><color rgb="FF808080"/><name val="Arial"/></font>' +
+    '</fonts>' +
+    '<fills count="5">' +
+      '<fill><patternFill patternType="none"/></fill>' +
+      '<fill><patternFill patternType="gray125"/></fill>' +
+      '<fill><patternFill patternType="solid"><fgColor rgb="FF44546A"/><bgColor indexed="64"/></patternFill></fill>' +
+      '<fill><patternFill patternType="solid"><fgColor rgb="FFFFE699"/><bgColor indexed="64"/></patternFill></fill>' +
+      '<fill><patternFill patternType="solid"><fgColor rgb="FFE2EFDA"/><bgColor indexed="64"/></patternFill></fill>' +
+    '</fills>' +
+    '<borders count="2">' +
+      '<border><left/><right/><top/><bottom/><diagonal/></border>' +
+      '<border><left style="thin"><color rgb="FFBFBFBF"/></left><right style="thin"><color rgb="FFBFBFBF"/></right>' +
+      '<top style="thin"><color rgb="FFBFBFBF"/></top><bottom style="thin"><color rgb="FFBFBFBF"/></bottom><diagonal/></border>' +
+    '</borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+    '<cellXfs count="17">' +
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +                                        /* 0 normal */
+      '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/>' +                                        /* 1 negrita */
+      '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0"/>' +                                        /* 2 titulo */
+      '<xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyAlignment="1">' +
+        '<alignment horizontal="center" vertical="center" wrapText="1"/></xf>' +                                /* 3 cabecera */
+      '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0"/>' +                                      /* 4 0.00 */
+      '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0"/>' +                                      /* 5 0.000 */
+      '<xf numFmtId="166" fontId="0" fillId="0" borderId="1" xfId="0"/>' +                                      /* 6 % */
+      '<xf numFmtId="167" fontId="0" fillId="0" borderId="1" xfId="0"/>' +                                      /* 7 € 4dec */
+      '<xf numFmtId="168" fontId="1" fillId="4" borderId="1" xfId="0"/>' +                                      /* 8 € resultado */
+      '<xf numFmtId="165" fontId="1" fillId="4" borderId="1" xfId="0"/>' +                                      /* 9 0.000 resultado */
+      '<xf numFmtId="168" fontId="4" fillId="3" borderId="1" xfId="0"/>' +                                      /* 10 € editable */
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0"/>' +                                        /* 11 texto caja */
+      '<xf numFmtId="0" fontId="1" fillId="4" borderId="1" xfId="0"/>' +                                        /* 12 texto resultado */
+      '<xf numFmtId="0" fontId="5" fillId="0" borderId="0" xfId="0"/>' +                                        /* 13 nota */
+      '<xf numFmtId="169" fontId="0" fillId="0" borderId="1" xfId="0"/>' +                                      /* 14 entero */
+      '<xf numFmtId="166" fontId="4" fillId="3" borderId="1" xfId="0"/>' +                                      /* 15 % editable */
+      '<xf numFmtId="164" fontId="4" fillId="3" borderId="1" xfId="0"/>' +                                      /* 16 numero editable */
+    '</cellXfs>' +
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
+    '</styleSheet>';
+
+  function libro(hojas){
+    var files = [];
+    files.push({name:"[Content_Types].xml", body:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+      '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+      '<Default Extension="xml" ContentType="application/xml"/>' +
+      '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' +
+      hojas.map(function(h, i){
+        return '<Override PartName="/xl/worksheets/sheet' + (i+1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+      }).join("") +
+      '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' +
+      '</Types>'});
+
+    files.push({name:"_rels/.rels", body:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>' +
+      '</Relationships>'});
+
+    files.push({name:"xl/workbook.xml", body:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" ' +
+      'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' +
+      hojas.map(function(h, i){
+        return '<sheet name="' + esc(h.nombre) + '" sheetId="' + (i+1) + '" r:id="rId' + (i+1) + '"/>';
+      }).join("") +
+      '</sheets><calcPr fullCalcOnLoad="1"/></workbook>'});
+
+    files.push({name:"xl/_rels/workbook.xml.rels", body:
+      '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      hojas.map(function(h, i){
+        return '<Relationship Id="rId' + (i+1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i+1) + '.xml"/>';
+      }).join("") +
+      '<Relationship Id="rId' + (hojas.length+1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>' +
+      '</Relationships>'});
+
+    files.push({name:"xl/styles.xml", body:STYLES});
+    hojas.forEach(function(h, i){
+      files.push({name:"xl/worksheets/sheet" + (i+1) + ".xml", body:hoja(h.filas, h.cols)});
+    });
+    return zip(files);
+  }
+
+  return {libro:libro};
+})();
+
+
+/* ============ informe dinamico: cualquier numero de pasos + sesiones ============ */
+function construirInforme(d){
+  var S = function(v, s){ return {t:"s", v:v, s:s}; };
+  var N = function(v, s){ return {t:"n", v:v, s:s}; };
+  var F = function(f, v, s){ return {t:"f", f:f, v:v, s:s}; };
+  var FS = function(f, v, s){ return {t:"fs", f:f, v:v, s:s}; };
+
+  var LIBRES = 300;
+  var nP = d.pasos.length;
+  var PRIM = 2, ULT = PRIM + d.tomas.length + LIBRES - 1;
+  var RC = "TOMAS!$A$" + PRIM + ":$A$" + ULT;
+  var RT = "TOMAS!$C$" + PRIM + ":$C$" + ULT;
+  var RS = "TOMAS!$E$" + PRIM + ":$E$" + ULT;
+
+  var rDet = 17, r1 = rDet + 1, rTot = r1 + nP, rVis = rTot + 2, rNot = rVis + 9;
+  var U = d.unidad || "unidad";
+
+  var f = [];
+  f[0] = [S("INFORME DE TIEMPOS · " + d.actividad, 2)];
+  f[1] = [S("Generado el " + d.fecha + " · " + d.tomas.length + " tomas · " + nP + " pasos · " +
+            d.sesiones + (d.sesiones === 1 ? " sesion" : " sesiones"), 13)];
+
+  f[3] = [S("DATOS ECONOMICOS", 1)];
+  f[4] = [S("Coste del operario (€/hora)", 11), N(d.costeHora, 10), null,
+          S("Las celdas amarillas se pueden cambiar: todo lo demas se recalcula solo", 13)];
+  f[5] = [S("Suplementos / fatiga", 11), N(d.suplementos, 15)];
+  f[6] = [S("Unidades por lote", 11), N(d.udsLote, 16), null,
+          S("Las unidades de cada toma van en la hoja TOMAS, columna D", 13)];
+
+  f[8] = [S("TIEMPO POR " + U.toUpperCase(), 1)];
+  f[9]  = [S("Segundos por " + U + " (sin suplementos)", 12), F("F" + rTot, d.total, 9)];
+  f[10] = [S("Segundos por " + U + " (con suplementos)", 12), F("B10*(1+B6)", d.conSupl, 9)];
+  f[11] = [S("UNIDADES POR HORA", 12), F("IF(B11=0,0,3600/B11)", d.conSupl ? 3600/d.conSupl : 0, 9)];
+  f[12] = [S("Coste por " + U, 12), F("B11/3600*B5", d.conSupl/3600*d.costeHora, 8)];
+  f[13] = [S("Unidades por jornada de 8 h", 12), F("B12*8", d.conSupl ? 3600/d.conSupl*8 : 0, 9)];
+  f[14] = [S("Segundos por lote", 12), F("B11*B7", d.conSupl*d.udsLote, 9)];
+
+  f[rDet-2] = [S("DETALLE POR PASO", 1)];
+  f[rDet-1] = [S("Nº", 3), S("PASO", 3), S("GRUPO", 3), S("TOMAS", 3), S("MEDIA POR TOMA (seg)", 3),
+               S("SEG / UNIDAD", 3), S("UNID. / H", 3), S("% DEL TIEMPO", 3),
+               S("COSTE € / UNIDAD", 3), S("ESTADO", 3)];
+
+  d.pasos.forEach(function(p, i){
+    var x = r1 + i;
+    f[x-1] = [
+      N(p.cod, 11), S(p.nombre, 11), S(p.grupo || "bucle", 11),
+      F('COUNTIFS(' + RC + ',A' + x + ',' + RT + ',">0")', p.tomas, 14),
+      F('IFERROR(AVERAGEIFS(' + RT + ',' + RC + ',A' + x + ',' + RT + ',">0"),0)', p.media, 4),
+      F('IFERROR(AVERAGEIFS(' + RS + ',' + RC + ',A' + x + ',' + RT + ',">0"),0)', p.pp, 5),
+      F('IF(F' + x + '=0,0,3600/(F' + x + '*(1+$B$6)))', p.pp ? 3600/(p.pp*(1+d.suplementos)) : 0, 4),
+      F('IF($F$' + rTot + '=0,0,F' + x + '/$F$' + rTot + ')', d.total ? p.pp/d.total : 0, 6),
+      F('F' + x + '*(1+$B$6)/3600*$B$5', p.pp*(1+d.suplementos)/3600*d.costeHora, 7),
+      FS('IF(D' + x + '=0,"sin datos",IF(D' + x + '<5,"pocas tomas","ok"))',
+         p.tomas === 0 ? "sin datos" : (p.tomas < 5 ? "pocas tomas" : "ok"), 11)
+    ];
+  });
+
+  f[rTot-1] = [S("", 12), S("TOTAL ACTIVIDAD", 12), S("", 12),
+    F("SUM(D" + r1 + ":D" + (rTot-1) + ")", d.tomas.length, 15), S("", 12),
+    F("SUM(F" + r1 + ":F" + (rTot-1) + ")", d.total, 9),
+    F("IF(F" + rTot + "=0,0,3600/(F" + rTot + "*(1+$B$6)))", d.conSupl ? 3600/d.conSupl : 0, 9),
+    F("SUM(H" + r1 + ":H" + (rTot-1) + ")", d.total ? 1 : 0, 6),
+    F("SUM(I" + r1 + ":I" + (rTot-1) + ")", d.total*(1+d.suplementos)/3600*d.costeHora, 8), S("", 12)];
+
+  var corr = d.tCorrido, asig = d.tAsignado, sinA = Math.max(0, corr - asig);
+  var b = function(n){ return "B" + n; };
+  f[rVis-1] = [S("VISION GENERAL · TIEMPO CORRIDO", 1)];
+  f[rVis]   = [S("Tiempo corrido total (seg)", 11), N(corr/1000, 4), null,
+               S("Reloj de sesion: cuenta aunque no estes midiendo ningun paso", 13)];
+  f[rVis+1] = [S("Tiempo medido en pasos (seg)", 11), N(asig/1000, 4), null,
+               S("Suma de todas las tomas cronometradas", 13)];
+  f[rVis+2] = [S("Tiempo sin asignar (seg)", 11),
+               F("MAX(0," + b(rVis+1) + "-" + b(rVis+2) + ")", sinA/1000, 4), null,
+               S("Pausas entre pasos, interrupciones y tiempo no medido", 13)];
+  f[rVis+3] = [S("% de tiempo sin asignar", 11),
+               F("IF(" + b(rVis+1) + "=0,0," + b(rVis+3) + "/" + b(rVis+1) + ")",
+                 corr ? sinA/corr : 0, 6)];
+  f[rVis+4] = [S("Unidades producidas", 11), N(d.udsReales, 16)];
+  f[rVis+5] = [S("Segundos reales por " + U + " (con pausas)", 11),
+               F("IF(" + b(rVis+5) + "=0,0," + b(rVis+1) + "/" + b(rVis+5) + ")",
+                 d.udsReales ? corr/1000/d.udsReales : 0, 9)];
+  f[rVis+6] = [S("UNIDADES POR HORA REALES", 11),
+               F("IF(" + b(rVis+6) + "=0,0,3600/" + b(rVis+6) + ")",
+                 d.udsReales && corr ? 3600/(corr/1000/d.udsReales) : 0, 9)];
+  f[rVis+7] = [S("Rendimiento sobre el tiempo medido", 11),
+               F("IF(" + b(rVis+1) + "=0,0," + b(rVis+2) + "/" + b(rVis+1) + ")",
+                 corr ? asig/corr : 0, 6)];
+
+  f[rNot]   = [S("COMO LEER ESTE INFORME", 1)];
+  f[rNot+1] = [S("TIEMPO POR " + U.toUpperCase() + " sale del cronometraje paso a paso: es el tiempo tipo, sin pausas.", 13)];
+  f[rNot+2] = [S("VISION GENERAL sale del reloj corrido e incluye las pausas: es el ritmo real del puesto.", 13)];
+  f[rNot+3] = [S("La diferencia entre los dos es el margen de mejora por organizacion, no por velocidad de la persona.", 13)];
+  f[rNot+4] = [S("Todo se calcula desde la hoja TOMAS: escribe filas nuevas ahi (codigo de paso, tiempo y unidades) " +
+                 "y el informe se actualiza. Hay " + LIBRES + " filas preparadas con la formula puesta.", 13)];
+  f[rNot+5] = [S("Un paso con menos de 5 tomas es poco fiable: conviene seguir cronometrando.", 13)];
+
+  /* ---------------- hoja TOMAS ---------------- */
+  var g = [];
+  g[0] = [S("COD. PASO", 3), S("PASO", 3), S("TIEMPO (seg)", 3), S("UNIDADES", 3),
+          S("SEG / UNIDAD", 3), S("SESION", 3), S("FECHA Y HORA", 3), S("ORIGEN", 3)];
+  d.tomas.forEach(function(t, i){
+    var x = i + 2;
+    g[i+1] = [N(t.cod, 14), S(t.nombre, 11), N(t.seg, 4), N(t.uds, 14),
+              F('IF(OR(C' + x + '="",D' + x + '=""),"",C' + x + '/D' + x + ')', t.seg/t.uds, 5),
+              S(t.sesion, 11), S(t.hora, 11), S(t.origen, 11)];
+  });
+  for(var k = 0; k < LIBRES; k++){
+    var x2 = d.tomas.length + 2 + k;
+    g[d.tomas.length + 1 + k] = [
+      {t:"n", v:"", s:14}, {t:"n", v:"", s:11}, {t:"n", v:"", s:4}, {t:"n", v:"", s:14},
+      FS('IF(OR(C' + x2 + '="",D' + x2 + '=""),"",C' + x2 + '/D' + x2 + ')', "", 5),
+      {t:"n", v:"", s:11}, {t:"n", v:"", s:11}, {t:"n", v:"", s:11}];
+  }
+
+  /* ---------------- hoja SESIONES ---------------- */
+  var s2 = [];
+  s2[0] = [S("SESION", 3), S("FECHA", 3), S("TOMAS", 3), S("CORRIDO (seg)", 3),
+           S("MEDIDO (seg)", 3), S("SIN ASIGNAR (seg)", 3), S("% SIN ASIGNAR", 3),
+           S("UNIDADES", 3), S("UNID. / H REALES", 3)];
+  d.listaSesiones.forEach(function(se, i){
+    var x = i + 2;
+    s2[i+1] = [S(se.nombre, 11), S(se.fecha, 11), N(se.tomas, 14),
+      N(se.corrido/1000, 4), N(se.asignado/1000, 4),
+      F('MAX(0,D' + x + '-E' + x + ')', Math.max(0, se.corrido - se.asignado)/1000, 4),
+      F('IF(D' + x + '=0,0,F' + x + '/D' + x + ')', se.corrido ? (se.corrido - se.asignado)/se.corrido : 0, 6),
+      N(se.uds, 14),
+      F('IF(D' + x + '=0,0,H' + x + '/(D' + x + '/3600))', se.corrido ? se.uds/(se.corrido/3600000) : 0, 4)];
+  });
+  var rT2 = d.listaSesiones.length + 2;
+  s2[rT2-1] = [S("TOTAL", 12), S("", 12),
+    F("SUM(C2:C" + (rT2-1) + ")", 0, 15), F("SUM(D2:D" + (rT2-1) + ")", 0, 9),
+    F("SUM(E2:E" + (rT2-1) + ")", 0, 9), F("SUM(F2:F" + (rT2-1) + ")", 0, 9),
+    F("IF(D" + rT2 + "=0,0,F" + rT2 + "/D" + rT2 + ")", 0, 6),
+    F("SUM(H2:H" + (rT2-1) + ")", 0, 15),
+    F("IF(D" + rT2 + "=0,0,H" + rT2 + "/(D" + rT2 + "/3600))", 0, 9)];
+
+  return XLS.libro([
+    {nombre:"INFORME",  cols:[6, 34, 10, 10, 19, 13, 12, 13, 16, 13], filas:f},
+    {nombre:"TOMAS",    cols:[11, 30, 13, 11, 13, 18, 18, 12], filas:g},
+    {nombre:"SESIONES", cols:[26, 18, 9, 15, 15, 17, 14, 11, 16], filas:s2}
+  ]);
+}
+
+/* ========================================================================== */
+
+(function(){
+  "use strict";
+
+
+  var $ = function(id){ return document.getElementById(id); };
+  var GRUPOS = {inicio:"Inicio del lote", bucle:"En cada ciclo (bucle)", cierre:"Cierre del lote", libre:"Tarea suelta (runner)"};
+
+  /* ---------------- datos ---------------- */
+  var PASOS_CONF = [
+    ["COLOCAR CAJA + ABRIR CAJA","inicio"],
+    ["SACAR BOLSA CON PRENDAS","bucle"],
+    ["ABRIR BOLSA Y SACAR PRENDAS","bucle"],
+    ["COLOCAR ETIQUETA","bucle"],
+    ["CORTAR ETIQUETA","bucle"],
+    ["METER EN BOLSA","bucle"],
+    ["METER EN CAJON","bucle"],
+    ["METER EN CAJA","cierre"],
+    ["CERRAR CAJA","cierre"],
+    ["DEJAR CAJA EN PALE","cierre"]
+  ];
+
+  var seq = 0;
+  function nid(pre){ seq++; return pre + Date.now().toString(36).slice(-4) + seq; }
+  function sesNueva(){ return {run:false, acc:0, ts:0, ini:null, uds:null}; }
+  function esRunner(a){ return (a || A()).modo === "runner"; }
+
+  var TAREAS_RUNNER = ["REPONER MATERIAL","RETIRAR PRODUCTO ACABADO","LLEVAR A PALETIZAR",
+    "TRAER CAJAS VACIAS","MOVER PALE CON TRANSPALETA","ESPERA / SIN TAREA"];
+  function actRunner(){
+    var a = {
+      id:nid("a"), modo:"runner", nombre:"Runner · área nueva", area:"", unidad:"tarea",
+      udsCiclo:1, udsLote:1,
+      pasos:TAREAS_RUNNER.map(function(t){ return {id:nid("p"), nombre:t, grupo:"libre", uds:1}; }),
+      tomas:[], est:{pid:null, ciclo:1, lote:1}, ses:sesNueva(), sesiones:[]
+    };
+    a.est.pid = a.pasos[0].id;
+    return a;
+  }
+
+  function actConfeccion(){
+    return {
+      id:"conf", nombre:"Confección · empaquetado", unidad:"prenda",
+      udsCiclo:2, udsLote:30,
+      modo:"secuencia", area:"",
+      pasos:PASOS_CONF.map(function(p){ return {id:nid("p"), nombre:p[0], grupo:p[1], uds:null}; }),
+      tomas:[], est:{pid:null, ciclo:1, lote:1}, ses:sesNueva(), sesiones:[]
+    };
+  }
+  function actNueva(){
+    var a = {
+      id:nid("a"), modo:"secuencia", area:"", nombre:"Actividad nueva", unidad:"unidad", udsCiclo:1, udsLote:1,
+      pasos:[{id:nid("p"), nombre:"PASO 1", grupo:"bucle", uds:null},
+             {id:nid("p"), nombre:"PASO 2", grupo:"bucle", uds:null},
+             {id:nid("p"), nombre:"PASO 3", grupo:"bucle", uds:null}],
+      tomas:[], est:{pid:null, ciclo:1, lote:1}, ses:sesNueva(), sesiones:[]
+    };
+    a.est.pid = a.pasos[0].id;
+    return a;
+  }
+
+  var DB = {cfg:{costeHora:12, suplementos:0.18, sound:true, dec:","}, actual:"conf", acts:[]};
+  DB.acts.push(actConfeccion());
+
+  var rt = {running:false, lapAcc:0, lapTs:0};
+  var sucio = false, ultimoGuardado = null, vista = "crono";
+
+  /* ---------------- acceso ---------------- */
+  function A(){
+    for(var i=0;i<DB.acts.length;i++) if(DB.acts[i].id === DB.actual) return DB.acts[i];
+    DB.actual = DB.acts[0].id; return DB.acts[0];
+  }
+  function lista(g){ return A().pasos.filter(function(p){ return p.grupo === g; }); }
+  function paso(pid){
+    var ps = A().pasos;
+    for(var i=0;i<ps.length;i++) if(ps[i].id === pid) return ps[i];
+    return null;
+  }
+  function pos(pid){
+    var ps = A().pasos;
+    for(var i=0;i<ps.length;i++) if(ps[i].id === pid) return i + 1;
+    return 0;
+  }
+  function udsDe(p){
+    if(!p) return 1;
+    if(p.uds > 0) return p.uds;
+    return p.grupo === "bucle" ? (A().udsCiclo || 1) : (A().udsLote || 1);
+  }
+  function actual(){
+    var a = A();
+    if(!a.est.pid || !paso(a.est.pid)) a.est.pid = (lista("bucle")[0] || a.pasos[0] || {}).id || null;
+    return a.est.pid;
+  }
+  function enCierre(pid){ var p = paso(pid); return p && p.grupo !== "bucle"; }
+
+  /* ---------------- recorrido ---------------- */
+  // funcion pura: dado un paso y el estado, devuelve el siguiente
+  function siguiente(pid, est){
+    var p = paso(pid), L = lista("bucle"), I = lista("inicio"), C = lista("cierre");
+    var r = {pid:pid, ciclo:est.ciclo, lote:est.lote};
+    function primero(arr, alt){ return (arr[0] || alt[0] || {id:pid}).id; }
+    function nuevoLote(){ r.lote = est.lote + 1; r.ciclo = 1; return primero(L, I); }
+    if(!p){ r.pid = primero(L, I); return r; }
+    var i;
+    if(p.grupo === "cierre"){
+      i = idxEn(C, pid);
+      r.pid = (i < C.length - 1) ? C[i+1].id : (I.length ? I[0].id : nuevoLote());
+      return r;
+    }
+    if(p.grupo === "inicio"){
+      i = idxEn(I, pid);
+      r.pid = (i < I.length - 1) ? I[i+1].id : nuevoLote();
+      return r;
+    }
+    i = idxEn(L, pid);
+    if(i === -1){ r.pid = primero(L, I); return r; }
+    if(i < L.length - 1){ r.pid = L[i+1].id; return r; }
+    r.ciclo = est.ciclo + 1; r.pid = L[0].id;
+    return r;
+  }
+  function idxEn(arr, pid){
+    for(var i=0;i<arr.length;i++) if(arr[i].id === pid) return i;
+    return -1;
+  }
+
+  /* ---------------- reloj ---------------- */
+  function lapMs(){ return rt.lapAcc + (rt.running ? (performance.now() - rt.lapTs) : 0); }
+
+  /* ---- tiempo corrido de la sesion ---- */
+  function ses(){ var a = A(); if(!a.ses) a.ses = sesNueva(); return a.ses; }
+  function corridoMs(){
+    var s = ses();
+    return s.acc + (s.run ? (performance.now() - s.ts) : 0);
+  }
+  function arrancarSes(){
+    var s = ses();
+    if(s.run) return;
+    s.run = true; s.ts = performance.now();
+    if(!s.ini) s.ini = Date.now();
+  }
+  function pararSes(){
+    var s = ses();
+    if(!s.run) return;
+    s.acc = corridoMs(); s.run = false;
+  }
+  // tiempo ya asignado a pasos en la sesion en curso
+  function asignadoMs(){
+    var t = 0;
+    A().tomas.forEach(function(r){ if(r.origen === "crono" && !r.ses) t += r.ms; });
+    return t;
+  }
+  // ciclos completos de la sesion, para estimar las unidades producidas
+  function udsEstimadas(){
+    var a = A(), B = lista("bucle");
+    if(!B.length) return 0;
+    var pid = B[0].id, n = 0;
+    a.tomas.forEach(function(r){ if(r.pid === pid && r.origen === "crono" && !r.ses) n++; });
+    return n * (a.udsCiclo || 1);
+  }
+  function udsSesion(){
+    var s = ses();
+    return (s.uds !== null && s.uds !== undefined && s.uds !== "") ? s.uds : udsEstimadas();
+  }
+  // todos los tiempos se muestran en segundos, nunca en minutos
+  function fmtLargo(ms){ return dec(Math.max(0, ms)/1000, 1) + " s"; }
+  function fmtCorto(ms){ return dec(Math.max(0, ms)/1000, 1) + " s"; }
+  function cerrarSesion(){
+    var a = A(), s = ses(), corrido = corridoMs(), asig = asignadoMs();
+    var nT = 0;
+    a.tomas.forEach(function(r){ if(r.origen === "crono" && !r.ses) nT++; });
+    if(!nT && corrido < 1000){ toast("La sesión está vacía"); return; }
+    var nombre = prompt("Nombre para esta sesión:",
+      "Sesión " + (a.sesiones.length + 1) + " · " + fechaTxt(new Date()));
+    if(nombre === null) return;
+    nombre = String(nombre).trim() || ("Sesión " + (a.sesiones.length + 1));
+    var uds = udsSesion();
+    a.tomas.forEach(function(r){ if(r.origen === "crono" && !r.ses) r.ses = nombre; });
+    a.sesiones.push({id:nid("s"), nombre:nombre, fecha:fechaTxt(new Date(s.ini || Date.now())),
+                     corrido:corrido, asignado:asig, tomas:nT, uds:uds});
+    a.ses = sesNueva();
+    rt.running = false; rt.lapAcc = 0;
+    marcarSucio(); render(); persist();
+    toast("Sesión guardada: " + nT + " tomas · " + fmtLargo(corrido) + " de tiempo corrido");
+  }
+  function fmt(ms){
+    var t = Math.max(0, ms), s = Math.floor(t/1000), c = Math.floor(t%1000/10);
+    return s + '<span class="cs">' + DB.cfg.dec + (c<10?"0":"") + c + ' s</span>';
+  }
+  var tk = 0;
+  function tick(){
+    $("readout").innerHTML = fmt(lapMs());
+    if((tk++ % 10) === 0) renderCorrido();
+    requestAnimationFrame(tick);
+  }
+
+  function renderCorrido(){
+    var s = ses(), corrido = corridoMs(), asig = asignadoMs();
+    var sin = Math.max(0, corrido - asig);
+    var pA = corrido ? asig/corrido*100 : 0, pS = corrido ? sin/corrido*100 : 0;
+    var txt = fmtLargo(corrido), cls = "run-clock" + (s.run ? "" : " off");
+
+    ["runClock","runClock2"].forEach(function(id){
+      var el = $(id); if(el){ el.textContent = txt; el.className = cls; }
+    });
+    ["barAsig","barAsig2"].forEach(function(id){ var e = $(id); if(e) e.style.width = pA.toFixed(1) + "%"; });
+    ["barSin","barSin2"].forEach(function(id){ var e = $(id); if(e) e.style.width = pS.toFixed(1) + "%"; });
+    ["lgAsig","lgAsig2"].forEach(function(id){ var e = $(id); if(e) e.textContent = fmtCorto(asig); });
+    ["lgSin","lgSin2"].forEach(function(id){ var e = $(id); if(e) e.textContent = fmtCorto(sin); });
+    if($("lgAsigPct")) $("lgAsigPct").textContent = "(" + Math.round(pA) + "%)";
+    if($("lgSinPct")) $("lgSinPct").textContent = "(" + Math.round(pS) + "%)";
+
+    var b = $("btnSes");
+    if(b) b.textContent = s.run ? "Parar sesión" : (s.acc ? "Reanudar sesión" : "Sesión sin arrancar");
+    if(b) b.disabled = !s.run && !s.acc;
+    var est = $("sesEstado");
+    if(est) est.textContent = s.run ? "en marcha" : (s.acc ? "parada" : "sin arrancar");
+
+    var u = udsSesion(), a = A();
+    var rit = (corrido && u) ? dec(u/(corrido/3600000), 1) + " " + a.unidad + "s/h" : "—";
+    if($("lgRitmo")) $("lgRitmo").textContent = rit;
+    var f = $("fUdsReales");
+    if(f && document.activeElement !== f) f.placeholder = String(udsEstimadas());
+    var nota = $("runNota");
+    if(nota) nota.innerHTML = corrido
+      ? "Ritmo real con pausas incluidas: <b>" + rit + "</b> · sin contar pausas: <b>" +
+        (asig && u ? dec(u/(asig/3600000),1) + " " + a.unidad + "s/h" : "—") + "</b>"
+      : "El reloj corrido sigue contando aunque pauses entre pasos: esa diferencia es el tiempo sin asignar.";
+
+    renderSesiones();
+    if(vista === "ses") renderReparto(corrido, asig, sin);
+  }
+
+  function renderReparto(corrido, asig, sin){
+    var a = A(), tot = {}, out = "";
+    a.tomas.forEach(function(r){
+      if(r.origen !== "crono" || r.ses) return;
+      tot[r.pid] = tot[r.pid] || {ms:0, n:0};
+      tot[r.pid].ms += r.ms; tot[r.pid].n++;
+    });
+    a.pasos.forEach(function(p, i){
+      var t = tot[p.id] || {ms:0, n:0};
+      var pct = corrido ? t.ms/corrido*100 : 0;
+      out += '<tr' + (t.n ? "" : ' class="sin"') + '>' +
+        '<td>' + num2(i+1) + " · " + esc(p.nombre) + '</td>' +
+        '<td class="n">' + (t.n || "—") + '</td>' +
+        '<td class="n">' + (t.n ? fmtCorto(t.ms) : "—") + '</td>' +
+        '<td class="n">' + (t.n ? dec(pct,1) + "%" : "—") + '</td>' +
+        '<td><div class="bar" style="height:10px;margin:0"><i class="asig" style="width:' +
+          pct.toFixed(1) + '%"></i></div></td></tr>';
+    });
+    $("repBody").innerHTML = out;
+    $("repSin").textContent = fmtCorto(sin);
+    $("repSinPct").textContent = corrido ? dec(sin/corrido*100,1) + "%" : "—";
+  }
+
+  function renderSesiones(){
+    var a = A(), out = "";
+    (a.sesiones || []).forEach(function(s){
+      var sinA = Math.max(0, s.corrido - s.asignado);
+      out += '<tr data-sid="' + s.id + '">' +
+        '<td>' + esc(s.nombre) + '</td><td>' + esc(s.fecha) + '</td>' +
+        '<td class="n">' + s.tomas + '</td>' +
+        '<td class="n">' + fmtLargo(s.corrido) + '</td>' +
+        '<td class="n">' + fmtCorto(sinA) + " (" + (s.corrido ? Math.round(sinA/s.corrido*100) : 0) + "%)" + '</td>' +
+        '<td class="n">' + s.uds + '</td>' +
+        '<td class="n">' + (s.corrido ? dec(s.uds/(s.corrido/3600000),1) : "—") + '</td>' +
+        '<td class="acc"><button class="mini del" data-a="delses" title="Borrar sesión">&#10005;</button></td></tr>';
+    });
+    $("sesBody").innerHTML = out || '<tr class="sin"><td colspan="8">Todavía no has cerrado ninguna sesión.</td></tr>';
+    $("sesCount").textContent = (a.sesiones || []).length;
+  }
+
+  function start(){ rt.running = true; rt.lapTs = performance.now(); rt.lapAcc = 0; arrancarSes(); keepAwake(); render(); }
+  function principal(){
+    if(esRunner()){
+      if(!rt.running){ cambiarTarea(actual()); return; }
+      var ms = lapMs(), a = A(), p = paso(actual());
+      if(ms < 300){ toast("Toma demasiado corta"); return; }
+      a.tomas.push({pid:actual(), ms:ms, uds:udsDe(p), lote:1, ts:Date.now(), origen:"crono", ses:null, tid:nid("t"),
+                    prev:{pid:actual(), ciclo:a.est.ciclo, lote:a.est.lote}});
+      rt.lapAcc = 0; rt.lapTs = performance.now();
+      marcarSucio(); beep(); render(); persist();
+      toast("Guardada · pulsa la siguiente tarea");
+      return;
+    }
+    rt.running ? guardarToma() : ((rt.lapAcc || A().tomas.length) ? resume() : start());
+  }
+  function resume(){ rt.running = true; rt.lapTs = performance.now(); arrancarSes(); keepAwake(); render(); }
+  function pause(){ if(!rt.running) return; rt.lapAcc = lapMs(); rt.running = false; render(); }
+  function cero(){
+    rt.running = false; rt.lapAcc = 0; rt.lapTs = performance.now();
+    toast("Crono a 0 · pulsa espacio para arrancar de nuevo"); render();
+  }
+  function guardarToma(){
+    if(!rt.running){ start(); return; }
+    var ms = lapMs();
+    if(ms < 120) return;
+    var a = A(), pid = actual(), p = paso(pid);
+    if(!p){ toast("Esta actividad no tiene pasos · defínelos en la pestaña Actividad"); return; }
+    a.tomas.push({pid:pid, ms:ms, uds:udsDe(p), lote:a.est.lote, ts:Date.now(), origen:"crono", ses:null, tid:nid("t"),
+                  prev:{pid:pid, ciclo:a.est.ciclo, lote:a.est.lote}});
+    rt.lapAcc = 0; rt.lapTs = performance.now();
+    var s = siguiente(pid, a.est);
+    a.est.pid = s.pid; a.est.ciclo = s.ciclo; a.est.lote = s.lote;
+    marcarSucio(); beep();
+    if(navigator.vibrate){ try{ navigator.vibrate(18); }catch(e){} }
+    render(); persist();
+  }
+  function skip(){
+    if(!rt.running) return;
+    var a = A(), s = siguiente(actual(), a.est);
+    a.est.pid = s.pid; a.est.ciclo = s.ciclo; a.est.lote = s.lote;
+    rt.lapAcc = 0; rt.lapTs = performance.now();
+    toast("Paso saltado, sin guardar"); render();
+  }
+  function undo(){
+    var a = A();
+    if(!a.tomas.length) return;
+    if(!a.tomas[a.tomas.length-1].prev){
+      toast("La última toma es de las añadidas a mano · quítala desde Histórico"); return;
+    }
+    var r = a.tomas.pop();
+    a.est.pid = r.prev.pid; a.est.ciclo = r.prev.ciclo; a.est.lote = r.prev.lote;
+    rt.lapAcc = lapMs() + r.ms; rt.lapTs = performance.now();
+    marcarSucio(); toast("Toma deshecha · el tiempo vuelve al cronómetro");
+    render(); persist();
+  }
+  function setPaso(pid){ A().est.pid = pid; render(); }
+
+  /* ---- runner: pulsar una tarea cierra la anterior y arranca la nueva ---- */
+  function cambiarTarea(pid){
+    var a = A(), p = paso(pid);
+    if(!p) return;
+    if(!rt.running){                      // primera pulsacion: solo arranca
+      a.est.pid = pid;
+      rt.lapAcc = 0; rt.lapTs = performance.now(); rt.running = true;
+      arrancarSes(); keepAwake(); beep(); render(); persist();
+      toast("Midiendo: " + p.nombre);
+      return;
+    }
+    var ms = lapMs();
+    if(pid === actual() && ms < 400) return;    // doble pulsacion sobre la misma tarea
+    if(ms >= 300){
+      var ant = paso(actual());
+      a.tomas.push({pid:actual(), ms:ms, uds:udsDe(ant || p), lote:1, ts:Date.now(),
+                    origen:"crono", ses:null, tid:nid("t"),
+                    prev:{pid:actual(), ciclo:a.est.ciclo, lote:a.est.lote}});
+      marcarSucio();
+    }
+    a.est.pid = pid;
+    rt.lapAcc = 0; rt.lapTs = performance.now();
+    beep();
+    if(navigator.vibrate){ try{ navigator.vibrate(18); }catch(e){} }
+    render(); persist();
+  }
+  function nuevoRunner(){
+    var a = actRunner();
+    DB.acts.push(a); DB.actual = a.id;
+    marcarSucio(); render(); renderEditor(); persist();
+    toast("Runner creado · ponle nombre y área en esta pestaña");
+    cambiarVista("act");
+  }
+  function cerrarLote(){
+    var C = lista("cierre"), I = lista("inicio");
+    var destino = C[0] || I[0];
+    if(!destino){ toast("Esta actividad no tiene pasos de cierre ni de inicio"); return; }
+    if(actual() === destino.id) return;
+    A().est.pid = destino.id;
+    toast("Cerrando el lote · los pasos de lote cuentan " + udsDe(destino) + " " + A().unidad + "s");
+    render();
+  }
+
+  /* ---------------- historico ---------------- */
+  var ajustadas = 0;
+  function meter(nPaso, seg, uds){
+    var a = A();
+    nPaso = parseInt(nPaso, 10);
+    seg = parseFloat(String(seg).replace(",", "."));
+    uds = (uds === undefined || uds === "") ? null : parseInt(uds, 10);
+    if(!(nPaso >= 1 && nPaso <= a.pasos.length)) return false;
+    if(!(seg > 0)) return false;
+    var p = a.pasos[nPaso-1], def = udsDe(p);
+    if(p.grupo !== "bucle"){
+      if(uds > 0 && uds !== def) ajustadas++;
+      uds = def;
+    }
+    if(!(uds > 0)) uds = def;
+    a.tomas.unshift({pid:p.id, ms:seg*1000, uds:uds, lote:null, ts:null, origen:"hist", tid:nid("t")});
+    return true;
+  }
+  function importar(txt){
+    var ok = 0, mal = 0;
+    ajustadas = 0;
+    txt.split(/\r?\n/).forEach(function(l){
+      if(!l.trim()) return;
+      var c = l.indexOf("\t") !== -1 ? l.split("\t") : (l.indexOf(";") !== -1 ? l.split(";") : l.trim().split(/\s+/));
+      c = c.map(function(x){ return x.trim(); }).filter(function(x){ return x !== ""; });
+      if(c.length < 2){ mal++; return; }
+      if(meter(c[0], c[1], c[2])) ok++; else mal++;
+    });
+    if(ok){ marcarSucio(); render(); persist(); }
+    toast(ok + (ok === 1 ? " toma añadida" : " tomas añadidas") +
+          (ajustadas ? " · " + ajustadas + " de lote ajustadas" : "") +
+          (mal ? " · " + mal + " líneas ignoradas" : ""));
+    return ok;
+  }
+  function quitarImportadas(){
+    var a = A(), n = a.tomas.filter(function(r){ return r.origen === "hist"; }).length;
+    if(!n){ toast("No hay tomas añadidas a mano"); return; }
+    if(!confirm("Se quitan las " + n + " tomas añadidas a mano. Las del cronómetro se quedan. ¿Seguimos?")) return;
+    a.tomas = a.tomas.filter(function(r){ return r.origen !== "hist"; });
+    marcarSucio(); render(); persist(); toast(n + " tomas quitadas");
+  }
+
+  /* ---------------- sonido y pantalla ---------------- */
+  var actx = null;
+  function beep(){
+    if(!DB.cfg.sound) return;
+    try{
+      if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+      var o = actx.createOscillator(), g = actx.createGain();
+      o.type = "square"; o.frequency.value = enCierre(actual()) ? 660 : 880;
+      g.gain.setValueAtTime(.07, actx.currentTime);
+      g.gain.exponentialRampToValueAtTime(.0001, actx.currentTime + .07);
+      o.connect(g); g.connect(actx.destination);
+      o.start(); o.stop(actx.currentTime + .08);
+    }catch(e){}
+  }
+  var wl = null;
+  function keepAwake(){
+    try{
+      if(navigator.wakeLock && !wl){
+        navigator.wakeLock.request("screen").then(function(l){
+          wl = l; l.addEventListener("release", function(){ wl = null; });
+        }, function(){});
+      }
+    }catch(e){}
+  }
+
+  /* ---------------- calculo ---------------- */
+  function stats(){
+    var a = A(), map = {}, total = 0;
+    a.pasos.forEach(function(p){ map[p.id] = {tomas:0, suma:0, sumaPP:0, media:0, pp:0}; });
+    a.tomas.forEach(function(r){
+      var m = map[r.pid];
+      if(!m) return;
+      m.tomas++; m.suma += r.ms/1000; m.sumaPP += (r.ms/1000)/(r.uds || 1);
+    });
+    a.pasos.forEach(function(p){
+      var m = map[p.id];
+      m.media = m.tomas ? m.suma/m.tomas : 0;
+      m.pp = m.tomas ? m.sumaPP/m.tomas : 0;
+      total += m.pp;
+    });
+    return {map:map, total:total};
+  }
+
+  /* ---------------- pintar ---------------- */
+  function num2(n){ return (n<10?"0":"") + n; }
+  function dosDig(n){ return (n<10?"0":"") + n; }
+  function dec(v, d){ return v.toFixed(d).replace(".", DB.cfg.dec); }
+
+  function render(){
+    var a = A(), pid = actual(), p = paso(pid), U = a.unidad;
+    $("actNombre").textContent = a.nombre;
+    $("lblSeg").textContent = "Seg / " + U;
+    $("thSegUd").textContent = "Seg / " + U;
+    $("thUdH").textContent = U + "s / h";
+
+    if(p){
+      $("stepNum").textContent = num2(pos(pid));
+      $("stepName").textContent = p.nombre;
+      $("stepTag").textContent = (p.grupo === "bucle" ? "bucle" : p.grupo) + " · " + udsDe(p) + " " + U + (udsDe(p) === 1 ? "" : "s");
+      $("stepTag").className = "tag " + p.grupo;
+      var s = siguiente(pid, a.est), sp = paso(s.pid);
+      $("nextName").textContent = sp ? sp.nombre : "—";
+    }else{
+      $("stepNum").textContent = "--"; $("stepName").textContent = "Sin pasos definidos";
+      $("stepTag").textContent = "—"; $("stepTag").className = "tag bucle";
+      $("nextName").textContent = "—";
+    }
+
+    $("clock").className = "clock" + (!rt.running ? ((a.tomas.length || rt.lapAcc) ? " paused" : " idle") : "");
+    var main = $("btnMain");
+    if(!rt.running && !rt.lapAcc && !a.tomas.length){ main.innerHTML = 'Empezar<kbd>espacio</kbd>'; main.className = "btn btn-main start"; }
+    else if(!rt.running){ main.innerHTML = 'Reanudar<kbd>espacio</kbd>'; main.className = "btn btn-main start"; }
+    else{ main.innerHTML = 'Guardar y siguiente<kbd>espacio</kbd>'; main.className = "btn btn-main"; }
+
+    var bc = $("btnCaja"), hayCierre = lista("cierre").length + lista("inicio").length > 0;
+    if(!hayCierre){ bc.style.display = "none"; }
+    else{
+      bc.style.display = "";
+      if(enCierre(pid)){
+        bc.className = "btn btn-caja cerrando";
+        bc.innerHTML = 'Cerrando lote · paso ' + num2(pos(pid)) + '<kbd>C</kbd>';
+        bc.disabled = true;
+      }else{
+        bc.className = "btn btn-caja";
+        bc.innerHTML = 'Cerrar lote<kbd>C</kbd>';
+        bc.disabled = false;
+      }
+    }
+    $("btnPause").textContent = rt.running ? "Pausar" : "Reanudar";
+    $("btnPause").disabled = !rt.running && !rt.lapAcc && !a.tomas.length;
+    $("btnUndo").disabled = !a.tomas.length;
+    $("btnSkip").disabled = !rt.running;
+    $("btnCero").disabled = !rt.running && !rt.lapAcc;
+
+    if(esRunner(a)){
+      $("cCaja").textContent = a.tomas.length;
+      $("cBolsa").textContent = a.pasos.length;
+    }else{
+      $("cCaja").textContent = a.est.lote;
+      $("cBolsa").textContent = a.est.ciclo;
+    }
+    $("cTomas").textContent = a.tomas.length;
+
+    var hechos = a.est.ciclo - 1, tal = "", tope = Math.min(hechos, 60);
+    for(var i=0;i<tope;i++) tal += "<i></i>";
+    if(!enCierre(pid)) tal += '<i class="now"></i>';
+    $("tally").innerHTML = tal || '<i class="pre"></i>';
+    $("stripTitulo").textContent = "Ciclos de este lote";
+    $("stripInfo").textContent = hechos + (hechos === 1 ? " ciclo · " : " ciclos · ") +
+      (hechos * (a.udsCiclo || 1)) + " " + U + "s";
+    $("stripFoot").innerHTML = enCierre(pid)
+      ? 'Cerrando el lote nº ' + a.est.lote + '. Los pasos de lote cuentan <b>' + udsDe(p) + ' ' + U + 's</b>.'
+      : 'Cuenta informativa. El lote se cierra cuando tú pulses <b>Cerrar lote</b>, y sus pasos usan siempre <b>' + (a.udsLote || 1) + ' ' + U + 's</b>.';
+
+    renderModo(); renderChips(); renderLog(); renderTabla(); renderHist(); renderSave(); renderPie(); renderCorrido();
+  }
+  function renderModo(){
+    var a = A(), run = esRunner(a);
+    ["runnerHead","tareas","runnerPie"].forEach(function(id){
+      $(id).className = $(id).className.replace(/\s*oculto/g, "") + (run ? "" : " oculto");
+    });
+    ["stripPanel","chipsPanel"].forEach(function(id){
+      $(id).className = $(id).className.replace(/\s*oculto/g, "") + (run ? " oculto" : "");
+    });
+    $("btnCaja").style.display = run ? "none" : "";
+    $("btnSkip").style.display = run ? "none" : "";
+    $("lblLote").textContent = run ? "Cambios" : "Lote";
+    $("lblCiclo").textContent = run ? "Tareas" : "Ciclo";
+    if(run){
+      $("nextName").parentNode.style.display = "none";
+      $("btnMain").innerHTML = rt.running
+        ? 'Cerrar la tarea en curso<kbd>espacio</kbd>'
+        : 'Empezar · pulsa una tarea<kbd>espacio</kbd>';
+    }else{
+      $("nextName").parentNode.style.display = "";
+    }
+    if(run) renderTareas();
+  }
+
+  function renderTareas(){
+    var a = A(), s = stats().map, out = "", tot = 0, cur = actual();
+    a.pasos.forEach(function(p){ tot += (s[p.id] ? s[p.id].suma : 0); });
+    a.pasos.forEach(function(p){
+      var m = s[p.id] || {tomas:0, suma:0};
+      var pct = tot ? m.suma/tot*100 : 0;
+      var esp = /ESPERA|SIN TAREA|PAUSA|IMPRODUCTIV/i.test(p.nombre);
+      out += '<button class="tarea' + (p.id === cur ? " on" : "") + (esp ? " espera" : "") +
+             '" data-pid="' + p.id + '">' +
+        '<span class="nm">' + esc(p.nombre) + '</span>' +
+        '<span class="dat"><span>' + (m.tomas || 0) + (m.tomas === 1 ? " vez" : " veces") +
+          ' · ' + fmtCorto(m.suma*1000) + '</span><span class="pct">' + dec(pct,0) + '%</span></span>' +
+        '<span class="sub"><i style="width:' + pct.toFixed(1) + '%"></i></span>' +
+      '</button>';
+    });
+    $("tareas").innerHTML = out || '<div class="empty">Este runner no tiene tareas. Añádelas en la pestaña Actividad y pasos.</div>';
+
+    var runners = DB.acts.filter(function(x){ return x.modo === "runner"; });
+    $("selRunner").innerHTML = runners.map(function(x){
+      return '<option value="' + x.id + '"' + (x.id === a.id ? " selected" : "") + '>' +
+             esc(x.nombre + (x.area ? " · " + x.area : "")) + '</option>';
+    }).join("");
+    var p = paso(cur);
+    $("runnerInfo").textContent = (a.area ? a.area + " · " : "") + a.pasos.length + " tareas · " +
+      a.tomas.length + " cambios";
+    $("stepTag").textContent = "tarea suelta";
+    $("stepTag").className = "tag caja";
+    $("stepNum").textContent = num2(pos(cur));
+    if(p) $("stepName").textContent = p.nombre;
+  }
+
+  function renderPie(){
+    if(esRunner()){
+      $("pieAtajos").innerHTML = 'Atajos: <kbd>1</kbd>–<kbd>9</kbd> y <kbd>0</kbd> cambiar de tarea · ' +
+        '<kbd>espacio</kbd> cerrar la tarea en curso · <kbd>Z</kbd> deshacer · <kbd>P</kbd> pausar · ' +
+        '<kbd>R</kbd> poner a 0 · <kbd>S</kbd> cerrar sesión · <kbd>G</kbd> guardar todo. ' +
+        'Al pulsar una tarea se guarda sola la anterior: el reloj no se para entre tareas.';
+      return;
+    }
+    $("pieAtajos").innerHTML = 'Atajos: <kbd>espacio</kbd> guardar y siguiente · <kbd>C</kbd> cerrar lote · ' +
+      '<kbd>1</kbd>–<kbd>9</kbd> y <kbd>0</kbd> saltar a un paso · <kbd>Z</kbd> deshacer · <kbd>P</kbd> pausar · ' +
+      '<kbd>N</kbd> saltar paso · <kbd>R</kbd> poner el crono a 0 · <kbd>S</kbd> cerrar sesión · <kbd>G</kbd> guardar todo. ' +
+      'Pausar detiene el paso pero no el reloj corrido: ese hueco cuenta como tiempo sin asignar.';
+  }
+  function renderChips(){
+    var a = A(), s = stats().map, out = "", pid = actual();
+    a.pasos.forEach(function(p, i){
+      out += '<button class="chip ' + p.grupo + (p.id === pid ? " on" : "") + '" data-pid="' + p.id + '">' +
+             '<b>' + num2(i+1) + '</b><span class="nm">' + esc(p.nombre) + '</span>' +
+             '<span class="ct">' + (s[p.id].tomas || "·") + '</span></button>';
+    });
+    $("chips").innerHTML = out || '<div class="empty">Esta actividad no tiene pasos. Defínelos en la pestaña Actividad y pasos.</div>';
+  }
+  function renderLog(){
+    var a = A(), log = $("log");
+    $("logCount").textContent = a.tomas.length;
+    if(!a.tomas.length){
+      log.innerHTML = '<div class="empty">Todavía no hay ninguna toma.<br>Pulsa Empezar y cronometra el primer paso.</div>';
+      return;
+    }
+    var out = "";
+    for(var i = a.tomas.length - 1; i >= 0; i--){
+      var r = a.tomas[i], p = paso(r.pid);
+      if(!p) continue;
+      out += '<div class="log-row ' + p.grupo + (r.origen === "hist" ? " hist" : "") + '">' +
+             '<b>' + num2(pos(r.pid)) + '</b><span class="nm">' + esc(p.nombre) + '</span>' +
+             (r.origen === "hist" ? '<span class="hi">antes</span>' : '') +
+             '<span class="t">' + dec(r.ms/1000, 2) + ' s</span></div>';
+    }
+    log.innerHTML = out;
+  }
+  function renderTabla(){
+    var a = A(), s = stats(), out = "", supl = 1 + DB.cfg.suplementos;
+    a.pasos.forEach(function(p, i){
+      var m = s.map[p.id];
+      var estado = m.tomas === 0 ? "" : (m.tomas < 5 ? '<span class="pill pocas">pocas tomas</span>' : '<span class="pill ok">ok</span>');
+      out += '<tr class="' + (m.tomas ? "" : "sin") + '">' +
+        '<td>' + num2(i+1) + " · " + esc(p.nombre) + '</td>' +
+        '<td class="n">' + (m.tomas || "—") + '</td>' +
+        '<td class="n">' + (m.tomas ? dec(m.media,2) : "—") + '</td>' +
+        '<td class="n">' + (m.tomas ? dec(m.pp,3) : "—") + '</td>' +
+        '<td class="n">' + (m.pp ? dec(3600/(m.pp*supl),0) : "—") + '</td>' +
+        '<td class="n">' + (m.tomas && s.total ? dec(m.pp/s.total*100,1) + "%" : "—") + '</td>' +
+        '<td>' + estado + '</td></tr>';
+    });
+    $("resBody").innerHTML = out;
+    $("fTomas").textContent = a.tomas.length;
+    $("fSeg").textContent = s.total ? dec(s.total,3) : "—";
+    $("cSeg").textContent = s.total ? dec(s.total,2) : "—";
+    $("fPh").textContent = s.total ? dec(3600/(s.total*supl),1) : "—";
+  }
+  function renderHist(){
+    var a = A(), hist = 0;
+    a.tomas.forEach(function(r){ if(r.origen === "hist") hist++; });
+    $("histInfo").textContent = (a.tomas.length - hist) + " del crono · " + hist + " a mano";
+  }
+  function renderSave(){
+    var b = $("btnSave"), s = $("saveInfo"), n = 0;
+    DB.acts.forEach(function(a){ n += a.tomas.length; });
+    b.className = "btn btn-save" + (sucio ? " sucio" : "");
+    if(!n && !sucio){ s.textContent = "sin tomas"; return; }
+    s.textContent = sucio ? "sin guardar" : (ultimoGuardado ? "guardado " + ultimoGuardado : n + " tomas");
+  }
+  function esc(t){ return String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+  /* ---------------- editor de actividad ---------------- */
+  function renderEditor(){
+    var a = A(), s = stats().map, out = "";
+    function ops(arr){
+      return arr.map(function(x){
+        return '<option value="' + x.id + '"' + (x.id === a.id ? " selected" : "") + '>' +
+               esc(x.nombre + (x.area ? " · " + x.area : "")) + '</option>';
+      }).join("");
+    }
+    var sec = DB.acts.filter(function(x){ return x.modo !== "runner"; });
+    var run2 = DB.acts.filter(function(x){ return x.modo === "runner"; });
+    $("selAct").innerHTML =
+      (sec.length ? '<optgroup label="Secuencias">' + ops(sec) + '</optgroup>' : "") +
+      (run2.length ? '<optgroup label="Runners">' + ops(run2) + '</optgroup>' : "");
+    $("fActNombre").value = a.nombre;
+    $("fUnidad").value = a.unidad;
+    $("fUdsCiclo").value = a.udsCiclo;
+    $("fUdsLote").value = a.udsLote;
+    $("fModo").value = a.modo || "secuencia";
+    $("fArea").value = a.area || "";
+    var run = esRunner(a);
+    $("wrapUds").className = "field" + (run ? " oculto" : "");
+    $("wrapArea").className = "field" + (run ? "" : " oculto");
+    $("actInfo").textContent = a.pasos.length + " pasos · " + a.tomas.length + " tomas";
+
+    a.pasos.forEach(function(p, i){
+      out += '<tr data-pid="' + p.id + '">' +
+        '<td class="ord">' + num2(i+1) + '</td>' +
+        '<td><input type="text" data-c="nombre" value="' + esc(p.nombre).replace(/"/g,"&quot;") + '"></td>' +
+        '<td><select data-c="grupo">' +
+          Object.keys(GRUPOS).map(function(g){
+            return '<option value="' + g + '"' + (p.grupo === g ? " selected" : "") + '>' + GRUPOS[g] + '</option>';
+          }).join("") +
+        '</select></td>' +
+        '<td><input type="number" min="1" step="1" class="num" data-c="uds" value="' +
+          (p.uds > 0 ? p.uds : "") + '" placeholder="' + udsDe(p) + '"></td>' +
+        '<td class="ord">' + (s[p.id] ? s[p.id].tomas : 0) + '</td>' +
+        '<td class="acc">' +
+          '<button class="mini" data-a="up" title="Subir">&#9650;</button> ' +
+          '<button class="mini" data-a="down" title="Bajar">&#9660;</button> ' +
+          '<button class="mini del" data-a="del" title="Borrar paso">&#10005;</button>' +
+        '</td></tr>';
+    });
+    $("edBody").innerHTML = out;
+  }
+
+  function cambiarVista(v){
+    vista = v;
+    $("vCrono").className = "vista" + (v === "crono" ? " on" : "");
+    $("vSes").className = "vista" + (v === "ses" ? " on" : "");
+    $("vAct").className = "vista" + (v === "act" ? " on" : "");
+    $("tabCrono").className = "tab" + (v === "crono" ? " on" : "");
+    $("tabSes").className = "tab" + (v === "ses" ? " on" : "");
+    $("tabAct").className = "tab" + (v === "act" ? " on" : "");
+    if(v === "act") renderEditor(); else render();
+    renderCorrido();
+  }
+
+  /* ---------------- informe ---------------- */
+  function fechaTxt(d){
+    return dosDig(d.getDate()) + "/" + dosDig(d.getMonth()+1) + "/" + d.getFullYear() +
+           " " + dosDig(d.getHours()) + ":" + dosDig(d.getMinutes());
+  }
+  function datosInforme(){
+    var a = A(), s = stats(), corrido = corridoMs(), asig = asignadoMs();
+    var tomas = a.tomas.map(function(r){
+      var p = paso(r.pid);
+      return {cod:pos(r.pid), nombre:p ? p.nombre : "?", seg:Number((r.ms/1000).toFixed(2)),
+              uds:r.uds || 1, sesion:r.ses || (r.origen === "hist" ? "anteriores" : "en curso"),
+              hora:r.ts ? fechaTxt(new Date(r.ts)) : "antes del cronometro",
+              origen:(r.origen === "hist" ? "anterior" : "cronometro")};
+    });
+    var pasos = a.pasos.map(function(p, i){
+      var m = s.map[p.id];
+      return {cod:i+1, nombre:p.nombre, grupo:p.grupo, tomas:m.tomas, media:m.media, pp:m.pp};
+    });
+    var lista = (a.sesiones || []).slice();
+    var nT = 0;
+    a.tomas.forEach(function(r){ if(r.origen === "crono" && !r.ses) nT++; });
+    if(nT || corrido > 1000){
+      lista.push({nombre:"En curso (sin cerrar)", fecha:fechaTxt(new Date()), tomas:nT,
+                  corrido:corrido, asignado:asig, uds:udsSesion()});
+    }
+    var tc = 0, ta = 0, ur = 0;
+    lista.forEach(function(x){ tc += x.corrido; ta += x.asignado; ur += x.uds; });
+    return {actividad:a.nombre, unidad:a.unidad, fecha:fechaTxt(new Date()),
+            tomas:tomas, pasos:pasos, listaSesiones:lista, sesiones:lista.length,
+            total:s.total, conSupl:s.total*(1+DB.cfg.suplementos),
+            udsLote:a.udsLote || 1, costeHora:DB.cfg.costeHora, suplementos:DB.cfg.suplementos,
+            tCorrido:tc, tAsignado:ta, udsReales:ur};
+  }
+  function bajar(blob, nombre){
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = nombre;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 2000);
+  }
+  function sello(){
+    var d = new Date();
+    return d.getFullYear() + dosDig(d.getMonth()+1) + dosDig(d.getDate()) + "_" + dosDig(d.getHours()) + dosDig(d.getMinutes());
+  }
+  function limpio(t){ return String(t).replace(/[^0-9A-Za-zÁÉÍÓÚÑáéíóúñ]+/g, "_").replace(/^_|_$/g, "").slice(0, 40); }
+
+  // copia serializable de todo el estudio (sin los datos volatiles del cronometro en marcha)
+  function snapshot(){
+    return {
+      v:3, actual:DB.actual, cfg:DB.cfg,
+      acts:DB.acts.map(function(a){
+        var s = a.ses || {};
+        return {
+          id:a.id, modo:a.modo, nombre:a.nombre, area:a.area, unidad:a.unidad,
+          udsCiclo:a.udsCiclo, udsLote:a.udsLote,
+          pasos:a.pasos, tomas:a.tomas, sesiones:a.sesiones || [],
+          est:{pid:a.est ? a.est.pid : null, ciclo:a.est ? a.est.ciclo : 1, lote:a.est ? a.est.lote : 1},
+          ses:{run:false, acc:s.acc || 0, ts:0, ini:s.ini || null, uds:(s.uds === undefined ? null : s.uds)}
+        };
+      })
+    };
+  }
+
+  // Copia para subir a GitHub: sin el token ni ningún dato de conexión.
+  // GitHub bloquea cualquier archivo que contenga un token ("Secret detected in content").
+  function snapshotSinSecretos(){
+    var s = snapshot();
+    var cfg = {};
+    for(var k in s.cfg) if(k !== "gh") cfg[k] = s.cfg[k];
+    s.cfg = cfg;
+    return s;
+  }
+
+  function descargarInforme(){
+    if(!A().tomas.length){ toast("No hay tomas todavía"); return; }
+    try{
+      var bytes = construirInforme(datosInforme());
+      bajar(new Blob([bytes], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),
+            "INFORME_" + limpio(A().nombre) + "_" + sello() + ".xlsx");
+      toast("Informe descargado con " + A().tomas.length + " tomas");
+    }catch(e){ toast("No se ha podido generar el informe · usa Descargar CSV"); }
+  }
+  function filas(){
+    return A().tomas.map(function(r){ return [pos(r.pid), dec(r.ms/1000,2), r.uds]; });
+  }
+  function copiar(){
+    if(!A().tomas.length){ toast("No hay tomas que copiar"); return; }
+    var txt = filas().map(function(f){ return f.join("\t"); }).join("\n");
+    var ta = document.createElement("textarea");
+    ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try{ ok = document.execCommand("copy"); }catch(e){}
+    document.body.removeChild(ta);
+    if(ok) toast(A().tomas.length + " tomas copiadas");
+    else if(navigator.clipboard) navigator.clipboard.writeText(txt).then(
+      function(){ toast(A().tomas.length + " tomas copiadas"); },
+      function(){ toast("El navegador ha bloqueado el copiado, usa Descargar CSV"); });
+    else toast("El navegador ha bloqueado el copiado, usa Descargar CSV");
+  }
+  function csv(){
+    if(!A().tomas.length){ toast("No hay tomas que descargar"); return; }
+    var sep = DB.cfg.dec === "," ? ";" : ",";
+    var l = [["PASO Nº","TIEMPO (seg)","UNIDADES"].join(sep)];
+    filas().forEach(function(f){ l.push(f.join(sep)); });
+    bajar(new Blob(["\ufeff" + l.join("\r\n")], {type:"text/csv;charset=utf-8"}),
+          "TOMAS_" + limpio(A().nombre) + "_" + sello() + ".csv");
+    toast("CSV descargado");
+  }
+
+  /* ---------------- guardar ---------------- */
+  function marcarSucio(){ sucio = true; renderSave(); }
+  function limpiar(o){
+    return JSON.parse(JSON.stringify({cfg:o.cfg, actual:o.actual, acts:o.acts}));
+  }
+  /* ================= SINCRONIZACION ONLINE POR GITHUB ================= */
+  // Guarda una copia de los datos en el propio repositorio de GitHub,
+  // en el archivo sync/datos.json. No hace falta ningun servidor.
+  function ghCfg(){
+    if(!DB.cfg.gh) DB.cfg.gh = {user:"", repo:"", rama:"main", token:"", auto:false, ult:null};
+    if(!DB.cfg.gh.rama) DB.cfg.gh.rama = "main";
+    return DB.cfg.gh;
+  }
+  function ghLista(){
+    var g = ghCfg();
+    return !!(g.user && g.repo && g.token);
+  }
+  var GH_ARCHIVO = "sync/datos.json";
+  function ghUrl(){
+    var g = ghCfg();
+    return "https://api.github.com/repos/" + encodeURIComponent(g.user.trim()) + "/" +
+           encodeURIComponent(g.repo.trim()) + "/contents/" + GH_ARCHIVO;
+  }
+  function ghHead(extra){
+    var g = ghCfg();
+    var hh = {"Authorization":"Bearer " + g.token.trim(),
+              "Accept":"application/vnd.github+json",
+              "X-GitHub-Api-Version":"2022-11-28"};
+    if(extra) for(var k in extra) hh[k] = extra[k];
+    return hh;
+  }
+  function nubeEstado(txt, cls){
+    var e = $("nubeEstado");
+    if(e) e.textContent = txt;
+    if(cls === "err") toast(txt);
+  }
+  // texto → base64 y vuelta, respetando acentos
+  function aBase64(txt){ return btoa(unescape(encodeURIComponent(txt))); }
+  function deBase64(b64){ return decodeURIComponent(escape(atob(String(b64).replace(/\s/g, "")))); }
+
+  function leerNubeCampos(){
+    var g = ghCfg();
+    g.user  = $("fGhUser").value.trim();
+    g.repo  = $("fGhRepo").value.trim();
+    g.rama  = $("fGhRama").value.trim() || "main";
+    g.token = $("fGhToken").value.trim();
+    g.auto  = $("fNubeAuto").checked;
+    $("fGhRama").value = g.rama;
+    persistYa();
+  }
+
+  // Lee sync/datos.json. Devuelve {datos, sha} o null si aun no existe.
+  function bajarNube(){
+    var g = ghCfg();
+    return fetch(ghUrl() + "?ref=" + encodeURIComponent(g.rama) + "&t=" + Date.now(),
+                 {headers:ghHead(), cache:"no-store"})
+      .then(function(r){
+        if(r.status === 404) return null;                 // todavia no hay copia
+        if(!r.ok) return r.text().then(function(t){ throw new Error(ghError(r.status, t)); });
+        return r.json().then(function(j){
+          var datos = null;
+          try{ datos = JSON.parse(deBase64(j.content)); }catch(e){ throw new Error("El archivo de la nube está dañado."); }
+          return {datos:datos, sha:j.sha};
+        });
+      });
+  }
+
+  // Devuelve el mensaje que manda GitHub, que es el que de verdad explica el fallo
+  function ghMensaje(txt){
+    try{ var j = JSON.parse(txt); return j.message || ""; }catch(e){ return String(txt||"").slice(0,140); }
+  }
+  function ghError(status, txt){
+    var m = ghMensaje(txt);
+    var cab = "HTTP " + status + (m ? ": " + m : "");
+    if(status === 401) return cab + "\n(El token no vale o ha caducado.)";
+    if(status === 403) return cab + "\n(Al token le falta permiso de escritura sobre este repositorio.)";
+    if(status === 404) return cab + "\n(No encuentra el repositorio, o el token no tiene acceso a él.)";
+    if(status === 409) return cab;
+    if(status === 422) return cab + "\n(GitHub ha rechazado el contenido enviado.)";
+    return cab;
+  }
+
+  // Sube el snapshot. Reintenta una vez si otro dispositivo se adelanta (409).
+  // Un intento de escritura. incluirRama=false omite "branch" (algunos repos lo rechazan).
+  function ghEscribir(sha, incluirRama){
+    var g = ghCfg();
+    var cuerpo = {
+      message: "Cronometro: datos " + fechaTxt(new Date()),
+      content: aBase64(JSON.stringify(snapshotSinSecretos(), null, 1))
+    };
+    if(sha) cuerpo.sha = sha;
+    if(incluirRama !== false && g.rama) cuerpo.branch = g.rama;
+    return fetch(ghUrl(), {method:"PUT", headers:ghHead({"Content-Type":"application/json"}),
+                           body:JSON.stringify(cuerpo), cache:"no-store"});
+  }
+
+  function subirNube(silencioso){
+    if(!ghLista()){ if(!silencioso) toast("Faltan datos de conexión"); return Promise.resolve(false); }
+    if(_ghSubiendo) return Promise.resolve(false);
+    _ghSubiendo = true;
+    var g = ghCfg(), ultimo = null;
+
+    function terminar(){
+      _ghSubiendo = false;
+      g.ult = new Date().toISOString();
+      var d = new Date();
+      nubeEstado("en la nube · " + dosDig(d.getHours()) + ":" + dosDig(d.getMinutes()));
+      persistYa();
+      if(!silencioso) toast("Datos subidos a tu repositorio de GitHub");
+      return true;
+    }
+    function fallar(e){
+      _ghSubiendo = false;
+      nubeEstado("sin subir · error");
+      if(!silencioso) avisoNube(e);
+      return false;
+    }
+
+    nubeEstado("subiendo…");
+    return bajarNube()
+      .then(function(prev){ return ghEscribir(prev && prev.sha, true); })
+      .then(function(r){
+        if(r.ok) return terminar();
+        return r.text().then(function(t){
+          ultimo = ghError(r.status, t);
+          var msg = ghMensaje(t);
+          // Repositorio recién creado y todavía sin ningún commit
+          if(/repository is empty/i.test(msg)){
+            throw new Error(ultimo + "\n\nEl repositorio está vacío: GitHub no deja crear el primer archivo por esta vía." +
+              "\nEntra en el repositorio, pulsa 'Add a README' y guárdalo. Después vuelve aquí y pulsa Subir otra vez.");
+          }
+          if(r.status !== 409 && r.status !== 422) throw new Error(ultimo);
+          // 2º intento: pedir el sha otra vez, por si otro dispositivo escribió antes
+          return bajarNube().then(function(prev2){
+            return ghEscribir(prev2 && prev2.sha, true).then(function(r2){
+              if(r2.ok) return terminar();
+              return r2.text().then(function(t2){
+                ultimo = ghError(r2.status, t2);
+                // 3er intento: sin indicar la rama, por si el nombre no coincide
+                return ghEscribir(prev2 && prev2.sha, false).then(function(r3){
+                  if(r3.ok) return terminar();
+                  return r3.text().then(function(t3){
+                    throw new Error(ghError(r3.status, t3) +
+                      "\n\n(Se ha intentado también con el sha actualizado y sin indicar la rama.)");
+                  });
+                });
+              });
+            });
+          });
+        });
+      })
+      .catch(fallar);
+  }
+  var _ghSubiendo = false;
+
+  function traerNube(){
+    if(!ghLista()){ toast("Faltan datos de conexión"); return; }
+    nubeEstado("bajando…");
+    bajarNube().then(function(fila){
+      if(!fila || !fila.datos){
+        nubeEstado("todavía sin copia");
+        toast("Aún no hay copia en el repositorio. Pulsa 'Subir mis datos a la nube' para crearla.");
+        return;
+      }
+      var res = fusionar(fila.datos);
+      aplicarCfg(); render(); renderEditor(); persistYa();
+      nubeEstado("combinado con la nube");
+      toast("Traído de la nube · " + res.nuevas + " tomas nuevas, " + res.acts + " actividades");
+    }).catch(function(e){
+      nubeEstado("sin conexión");
+      avisoNube(e);
+    });
+  }
+
+  function avisoNube(e){
+    var m = String(e && e.message || e), g = ghCfg(), pistas = [];
+    if(/401/.test(m)) pistas.push("Genera un token nuevo: GitHub → Settings → Developer settings → Fine-grained tokens.");
+    if(/403/.test(m)) pistas.push("Al token le falta el permiso 'Contents: Read and write' sobre este repositorio.");
+    if(/404/.test(m)) pistas.push("Comprueba el usuario y el nombre del repositorio, y que el token dé acceso a ese repositorio.");
+    if(/Failed to fetch|NetworkError/i.test(m)) pistas.push("No hay conexión a internet en este momento.");
+    if(/secret detected/i.test(m)){
+      pistas.length = 0;
+      pistas.push("GitHub ha detectado una clave dentro del archivo y por eso lo rechaza.");
+      pistas.push("Esta versión ya no incluye el token en la copia. Si sigue saliendo, es que estás usando el archivo antiguo:");
+      pistas.push("sube el index.html nuevo y recarga con Ctrl+Shift+R.");
+    }
+    else if(/409/.test(m)) pistas.push("Si el repositorio es nuevo y no tiene ningún archivo, créale primero un README desde GitHub.");
+    alert("No se ha podido sincronizar con GitHub.\n\n" + m +
+          (pistas.length ? "\n\n" + pistas.join("\n") : "") +
+          "\n\nArchivo: " + (g.user||"?") + "/" + (g.repo||"?") + " → " + GH_ARCHIVO + " (rama " + g.rama + ")" +
+          "\nToken: " + (g.token ? g.token.slice(0,10) + "… (" + g.token.length + " caracteres)" : "(vacío)"));
+  }
+
+  // Pregunta a GitHub por el repositorio: sirve para validar acceso y saber la rama real
+  function ghRepoInfo(){
+    var g = ghCfg();
+    return fetch("https://api.github.com/repos/" + encodeURIComponent(g.user.trim()) + "/" +
+                 encodeURIComponent(g.repo.trim()) + "?t=" + Date.now(),
+                 {headers:ghHead(), cache:"no-store"})
+      .then(function(r){
+        if(!r.ok) return r.text().then(function(t){ throw new Error(ghError(r.status, t)); });
+        return r.json();
+      });
+  }
+
+  function conectarNube(){
+    leerNubeCampos();
+    if(!ghLista()){ toast("Rellena usuario, repositorio y token"); return; }
+    nubeEstado("comprobando…");
+    ghRepoInfo().then(function(info){
+      // si la rama escrita no es la real del repositorio, la corregimos sola
+      if(info && info.default_branch && info.default_branch !== ghCfg().rama){
+        var real = info.default_branch;
+        if(confirm("La rama de este repositorio se llama \"" + real + "\", no \"" + ghCfg().rama + "\".\n\n¿La cambio por ti?")){
+          ghCfg().rama = real; $("fGhRama").value = real; persistYa();
+        }
+      }
+      if(info && info.permissions && info.permissions.push === false){
+        alert("Aviso: este token puede LEER el repositorio pero no escribir en él.\n\n" +
+              "Edita el token en GitHub y ponle 'Contents: Read and write'.");
+      }
+      seguirConectando();
+    }).catch(function(e){
+      nubeEstado("error de conexión");
+      avisoNube(e);
+    });
+  }
+
+  function seguirConectando(){
+    bajarNube().then(function(fila){
+      if(fila && fila.datos){
+        var n = 0; (fila.datos.acts || []).forEach(function(a){ n += (a.tomas || []).length; });
+        nubeEstado("conectado");
+        if(confirm("Conexión correcta.\n\nEn el repositorio hay una copia con " + n + " tomas.\n\n¿La combino con lo que tienes en este dispositivo?")){
+          traerNube();
+        }
+      }else{
+        nubeEstado("conectado · sin copia todavía");
+        toast("Conexión correcta. Pulsa 'Subir mis datos a la nube' para crear la copia.");
+      }
+    }).catch(function(e){
+      nubeEstado("error de conexión");
+      avisoNube(e);
+    });
+  }
+
+  // combina lo remoto con lo local sin perder nada
+  function fusionar(rem){
+    var res = {nuevas:0, acts:0};
+    if(!rem || !rem.acts) return res;
+    if(rem.cfg && rem.cfg.gh) delete rem.cfg.gh;   // los datos de conexión son de cada dispositivo
+    var idx = {};
+    DB.acts.forEach(function(a){ idx[a.id] = a; });
+    rem.acts.forEach(function(ra){
+      var la = idx[ra.id];
+      if(!la){
+        ra.ses = sesNueva();
+        DB.acts.push(ra); res.acts++; res.nuevas += (ra.tomas || []).length;
+        return;
+      }
+      // pasos: se queda la version con mas pasos si la local no tiene ninguno propio
+      if((!la.pasos || !la.pasos.length) && ra.pasos) la.pasos = ra.pasos;
+      var vistos = {};
+      la.tomas.forEach(function(t){ if(t.tid) vistos[t.tid] = 1; });
+      (ra.tomas || []).forEach(function(t){
+        if(t.tid && vistos[t.tid]) return;
+        if(!t.tid){                     // tomas antiguas sin identificador: evita duplicar por contenido
+          var dup = false;
+          la.tomas.forEach(function(x){ if(x.pid === t.pid && x.ms === t.ms && x.ts === t.ts) dup = true; });
+          if(dup) return;
+        }
+        la.tomas.push(t); res.nuevas++;
+      });
+      var vs = {};
+      (la.sesiones || []).forEach(function(s){ vs[s.id] = 1; });
+      (ra.sesiones || []).forEach(function(s){ if(!vs[s.id]) la.sesiones.push(s); });
+    });
+    return res;
+  }
+
+  var bajando = false;
+  function refrescarNube(){
+    var g = ghCfg();
+    if(!ghLista() || g.auto === false) return;
+    if(rt.running || bajando || _ghSubiendo) return;   // no interrumpir una medicion en curso
+    if(document.hidden) return;
+    bajando = true;
+    bajarNube().then(function(fila){
+      bajando = false;
+      if(!fila || !fila.datos) return;
+      var r = fusionar(fila.datos);
+      if(r.nuevas || r.acts){
+        aplicarCfg(); render(); persistYa();
+        toast("Actualizado: " + r.nuevas + " tomas nuevas de otro dispositivo");
+      }
+      var d = new Date();
+      nubeEstado("al día · " + dosDig(d.getHours()) + ":" + dosDig(d.getMinutes()));
+    }).catch(function(){ bajando = false; nubeEstado("sin conexión · trabajando en local"); });
+  }
+
+  var tNube = null;
+  function nubeAuto(){
+    var g = ghCfg();
+    if(!g.auto || !ghLista()) return;
+    if(tNube) clearTimeout(tNube);
+    tNube = setTimeout(function(){ tNube = null; subirNube(true); }, 4000);
+  }
+
+  var CLAVE = "estudio_tiempos_v3";
+  function persistYa(){
+    var txt;
+    try{ txt = JSON.stringify(snapshot()); }catch(e){ return; }
+    try{ if(window.localStorage) window.localStorage.setItem(CLAVE, txt); }catch(e){}
+    nubeAuto();
+    try{ if(window.storage && window.storage.set) window.storage.set(CLAVE, txt); }catch(e){}
+  }
+  var pend = null;
+  function persist(){
+    if(pend) return;
+    pend = setTimeout(function(){ pend = null; persistYa(); }, 2000);
+  }
+  function guardarTodo(){
+    persistYa();
+    var n = 0, ns = 0;
+    DB.acts.forEach(function(a){ n += a.tomas.length; ns += (a.sesiones || []).length; });
+    sucio = false;
+    var d = new Date();
+    ultimoGuardado = dosDig(d.getHours()) + ":" + dosDig(d.getMinutes());
+    renderSave();
+    toast("Guardado: " + DB.acts.length + " actividades, " + ns + " sesiones y " + n + " tomas");
+    if(ghLista() && ghCfg().auto) subirNube(true);
+  }
+  function descargarCopia(){
+    try{
+      bajar(new Blob([JSON.stringify(snapshot(), null, 1)], {type:"application/json;charset=utf-8"}),
+            "COPIA_ESTUDIO_TIEMPOS_" + sello() + ".json");
+      toast("Copia .json descargada");
+    }catch(e){ toast("No se ha podido generar la copia"); }
+  }
+  function restaurar(file){
+    var fr = new FileReader();
+    fr.onload = function(){
+      try{
+        var d = JSON.parse(fr.result);
+        if(!d.acts || !d.acts.length) throw 0;
+        DB.cfg = d.cfg || DB.cfg;
+        DB.acts = d.acts;
+        DB.actual = d.actual || d.acts[0].id;
+        DB.acts.forEach(function(a){
+          a.est = a.est || {pid:null, ciclo:1, lote:1};
+          a.tomas = a.tomas || [];
+          a.sesiones = a.sesiones || [];
+          a.modo = a.modo || "secuencia";
+          a.area = a.area || "";
+          a.ses = a.ses || sesNueva();
+          a.ses.run = false; a.ses.ts = 0;
+        });
+        aplicarCfg(); render(); renderEditor(); persist();
+        toast("Copia restaurada: " + DB.acts.length + " actividades");
+      }catch(e){ toast("Ese archivo no es una copia válida"); }
+    };
+    fr.readAsText(file);
+  }
+  function renderNube(){
+    var g = ghCfg();
+    if(!$("fGhUser")) return;
+    if(document.activeElement !== $("fGhUser"))  $("fGhUser").value  = g.user || "";
+    if(document.activeElement !== $("fGhRepo"))  $("fGhRepo").value  = g.repo || "";
+    if(document.activeElement !== $("fGhRama"))  $("fGhRama").value  = g.rama || "main";
+    if(document.activeElement !== $("fGhToken")) $("fGhToken").value = g.token || "";
+    $("fNubeAuto").checked = g.auto === true;
+    if(!ghLista()) nubeEstado("sin conectar");
+    $("nubeInfo").innerHTML = ghLista()
+      ? 'Conectado a <b>' + esc(g.user) + '/' + esc(g.repo) + '</b> (' + esc(g.rama) + '). ' +
+        'La copia se guarda en <b>sync/datos.json</b> dentro de ese repositorio. ' +
+        'Pon los mismos datos en otro dispositivo y pulsa <b>Traer datos de la nube</b>.'
+      : 'Guarda una copia de los datos de este dispositivo en tu propio repositorio de GitHub ' +
+        '(en un archivo <b>sync/datos.json</b>), para poder traerla a otro equipo o móvil. ' +
+        'No hace falta contratar ningún servidor: se usa tu cuenta de GitHub.';
+  }
+  function aplicarCfg(){
+    $("fCoste").value = DB.cfg.costeHora;
+    $("fSupl").value = Math.round(DB.cfg.suplementos*100);
+    $("fSound").checked = DB.cfg.sound !== false;
+    $("fDec").value = DB.cfg.dec;
+  }
+  function aplicarDB(d){
+    if(!d || !d.acts || !d.acts.length) return 0;
+    DB.cfg = d.cfg || DB.cfg; DB.acts = d.acts; DB.actual = d.actual || d.acts[0].id;
+    DB.acts.forEach(function(a){
+      a.est = a.est || {pid:null, ciclo:1, lote:1};
+      a.tomas = a.tomas || [];
+      a.sesiones = a.sesiones || [];
+      a.modo = a.modo || "secuencia";
+      a.area = a.area || "";
+      a.ses = a.ses || sesNueva();
+      a.ses.run = false;                       // al recuperar, el reloj corrido queda parado
+      a.ses.ts = 0;
+    });
+    var n = 0; DB.acts.forEach(function(a){ n += a.tomas.length; });
+    aplicarCfg(); render(); renderNube();
+    return n;
+  }
+  function restore(){
+    var txt = null;
+    try{ if(window.localStorage) txt = window.localStorage.getItem(CLAVE); }catch(e){}
+    if(txt){
+      try{
+        var n = aplicarDB(JSON.parse(txt));
+        if(n) toast("Recuperadas " + n + " tomas guardadas en este equipo");
+        return;
+      }catch(e){}
+    }
+    try{
+      if(!(window.storage && window.storage.get)) return;
+      window.storage.get(CLAVE).then(function(res){
+        if(!res || !res.value) return;
+        try{
+          var n = aplicarDB(JSON.parse(res.value));
+          if(n) toast("Recuperadas " + n + " tomas de la sesión anterior");
+        }catch(e){}
+      }, function(){});
+    }catch(e){}
+  }
+
+  var tt = null;
+  function toast(msg){
+    var el = $("toast");
+    el.textContent = msg; el.classList.add("on");
+    clearTimeout(tt); tt = setTimeout(function(){ el.classList.remove("on"); }, 2600);
+  }
+
+  /* ---------------- eventos ---------------- */
+  $("tabCrono").addEventListener("click", function(){ cambiarVista("crono"); });
+  $("tabSes").addEventListener("click", function(){ cambiarVista("ses"); });
+  $("tabAct").addEventListener("click", function(){ cambiarVista("act"); });
+  $("btnSes").addEventListener("click", function(){
+    var s = ses();
+    if(s.run){ pararSes(); toast("Sesión parada · el reloj corrido deja de contar"); }
+    else if(s.acc){ arrancarSes(); toast("Sesión reanudada"); }
+    render();
+  });
+  $("btnCerrarSes").addEventListener("click", cerrarSesion);
+  $("tareas").addEventListener("click", function(e){
+    var b = e.target.closest(".tarea"); if(!b) return;
+    cambiarTarea(b.getAttribute("data-pid"));
+  });
+  $("selRunner").addEventListener("change", function(){
+    DB.actual = this.value; rt.running = false; rt.lapAcc = 0;
+    render(); persist(); toast("Runner: " + A().nombre);
+  });
+  $("btnNuevoRunner").addEventListener("click", nuevoRunner);
+  $("fModo").addEventListener("change", function(){
+    var a = A();
+    a.modo = this.value;
+    if(a.modo === "runner"){
+      a.pasos.forEach(function(p){ p.grupo = "libre"; if(!(p.uds > 0)) p.uds = 1; });
+      if(a.unidad === "unidad") a.unidad = "tarea";
+    }else{
+      a.pasos.forEach(function(p){ if(p.grupo === "libre") p.grupo = "bucle"; });
+    }
+    marcarSucio(); render(); renderEditor(); persist();
+    toast(a.modo === "runner" ? "Modo runner: tareas sueltas, sin orden" : "Modo secuencia: pasos en orden");
+  });
+  $("fArea").addEventListener("input", function(){ A().area = this.value; marcarSucio(); });
+  $("fArea").addEventListener("change", function(){ render(); renderEditor(); persist(); });
+  $("fUdsReales").addEventListener("change", function(){
+    var v = String(this.value).trim();
+    ses().uds = v === "" ? null : Math.max(0, parseInt(v, 10) || 0);
+    marcarSucio(); renderCorrido(); persist();
+  });
+  $("sesBody").addEventListener("click", function(e){
+    var b = e.target.closest("button[data-a='delses']"); if(!b) return;
+    var tr = b.closest("tr"), sid = tr.getAttribute("data-sid"), a = A();
+    var s = null;
+    a.sesiones.forEach(function(x){ if(x.id === sid) s = x; });
+    if(!s) return;
+    if(!confirm("Se borra la sesión \"" + s.nombre + "\" de la lista. Sus tomas se quedan en la actividad. ¿Seguimos?")) return;
+    a.sesiones = a.sesiones.filter(function(x){ return x.id !== sid; });
+    marcarSucio(); renderCorrido(); persist(); toast("Sesión borrada de la lista");
+  });
+
+  $("btnMain").addEventListener("click", principal);
+  $("btnCaja").addEventListener("click", cerrarLote);
+  $("btnPause").addEventListener("click", function(){ rt.running ? pause() : resume(); });
+  $("btnUndo").addEventListener("click", undo);
+  $("btnSkip").addEventListener("click", skip);
+  $("btnCero").addEventListener("click", cero);
+  $("btnSave").addEventListener("click", guardarTodo);
+  $("btnSave2").addEventListener("click", guardarTodo);
+  $("btnDescargar").addEventListener("click", descargarCopia);
+  $("btnNubeConectar").addEventListener("click", conectarNube);
+  $("btnNubeSubir").addEventListener("click", function(){ leerNubeCampos(); subirNube(false); });
+  $("btnNubeBajar").addEventListener("click", function(){ leerNubeCampos(); traerNube(); });
+  ["fGhUser","fGhRepo","fGhRama","fGhToken"].forEach(function(id){
+    $(id).addEventListener("change", leerNubeCampos);
+  });
+  $("fNubeAuto").addEventListener("change", function(){
+    ghCfg().auto = this.checked; persistYa();
+    toast(this.checked ? "Subida automática activada" : "Subida automática desactivada");
+  });
+  $("btnXlsx").addEventListener("click", descargarInforme);
+  $("btnCopy").addEventListener("click", copiar);
+  $("btnCsv").addEventListener("click", csv);
+  $("btnRestaurar").addEventListener("click", function(){ $("fileRest").click(); });
+  $("fileRest").addEventListener("change", function(){ if(this.files[0]) restaurar(this.files[0]); this.value = ""; });
+
+  $("chips").addEventListener("click", function(e){
+    var b = e.target.closest(".chip"); if(!b) return;
+    setPaso(b.getAttribute("data-pid"));
+  });
+
+  $("btnImp").addEventListener("click", function(){
+    var t = $("impTxt").value;
+    if(!t.trim()){ toast("Pega antes las tomas en el recuadro"); return; }
+    if(importar(t)) $("impTxt").value = "";
+  });
+  $("btnImpQuitar").addEventListener("click", quitarImportadas);
+  $("btnReset").addEventListener("click", function(){
+    var a = A();
+    if(!a.tomas.length) return;
+    if(!confirm("Se borran las " + a.tomas.length + " tomas de «" + a.nombre + "». Las otras actividades no se tocan. ¿Seguimos?")) return;
+    a.tomas = []; a.est = {pid:null, ciclo:1, lote:1};
+    rt.running = false; rt.lapAcc = 0;
+    marcarSucio(); render(); persist(); toast("Tomas borradas");
+  });
+
+  $("fCoste").addEventListener("change", function(){
+    DB.cfg.costeHora = Math.max(0, parseFloat(String(this.value).replace(",", ".")) || 12);
+    this.value = DB.cfg.costeHora; marcarSucio(); persist();
+  });
+  $("fSupl").addEventListener("change", function(){
+    var v = Math.max(0, parseFloat(String(this.value).replace(",", ".")) || 18);
+    DB.cfg.suplementos = v/100; this.value = v; marcarSucio(); render(); persist();
+  });
+  $("fSound").addEventListener("change", function(){ DB.cfg.sound = this.checked; if(this.checked) beep(); persist(); });
+  $("fDec").addEventListener("change", function(){ DB.cfg.dec = this.value; render(); persist(); });
+
+  /* --- editor --- */
+  $("selAct").addEventListener("change", function(){
+    DB.actual = this.value; rt.running = false; rt.lapAcc = 0;
+    renderEditor(); render(); persist();
+    toast("Ahora estás midiendo: " + A().nombre);
+  });
+  $("fActNombre").addEventListener("input", function(){ A().nombre = this.value || "Sin nombre"; marcarSucio(); $("actNombre").textContent = A().nombre; });
+  $("fActNombre").addEventListener("change", function(){ renderEditor(); persist(); });
+  $("fUnidad").addEventListener("change", function(){
+    A().unidad = (this.value || "unidad").trim(); marcarSucio(); renderEditor(); render(); persist();
+  });
+  $("fUdsCiclo").addEventListener("change", function(){
+    A().udsCiclo = Math.max(1, parseInt(this.value,10) || 1); this.value = A().udsCiclo;
+    marcarSucio(); renderEditor(); render(); persist();
+  });
+  $("fUdsLote").addEventListener("change", function(){
+    A().udsLote = Math.max(1, parseInt(this.value,10) || 1); this.value = A().udsLote;
+    marcarSucio(); renderEditor(); render(); persist();
+  });
+
+  $("edBody").addEventListener("change", function(e){
+    var tr = e.target.closest("tr"); if(!tr) return;
+    var p = paso(tr.getAttribute("data-pid")); if(!p) return;
+    var c = e.target.getAttribute("data-c");
+    if(c === "nombre") p.nombre = e.target.value.trim() || "SIN NOMBRE";
+    if(c === "grupo") p.grupo = e.target.value;
+    if(c === "uds"){
+      var v = parseInt(e.target.value, 10);
+      p.uds = (v > 0) ? v : null;
+    }
+    marcarSucio(); renderEditor(); persist();
+  });
+  $("edBody").addEventListener("click", function(e){
+    var b = e.target.closest(".mini"); if(!b) return;
+    var tr = e.target.closest("tr"), pid = tr.getAttribute("data-pid");
+    var a = A(), i = -1, k;
+    for(k=0;k<a.pasos.length;k++) if(a.pasos[k].id === pid) i = k;
+    if(i === -1) return;
+    var acc = b.getAttribute("data-a");
+    if(acc === "up" && i > 0){ var t = a.pasos[i-1]; a.pasos[i-1] = a.pasos[i]; a.pasos[i] = t; }
+    if(acc === "down" && i < a.pasos.length-1){ var t2 = a.pasos[i+1]; a.pasos[i+1] = a.pasos[i]; a.pasos[i] = t2; }
+    if(acc === "del"){
+      var con = a.tomas.filter(function(r){ return r.pid === pid; }).length;
+      var msg = con ? "El paso «" + a.pasos[i].nombre + "» tiene " + con + " tomas. Se borrarán también. ¿Seguimos?"
+                    : "¿Borrar el paso «" + a.pasos[i].nombre + "»?";
+      if(!confirm(msg)) return;
+      a.tomas = a.tomas.filter(function(r){ return r.pid !== pid; });
+      a.pasos.splice(i, 1);
+      if(a.est.pid === pid) a.est.pid = null;
+    }
+    marcarSucio(); renderEditor(); render(); persist();
+  });
+  $("btnAddPaso").addEventListener("click", function(){
+    A().pasos.push({id:nid("p"), nombre:"PASO " + (A().pasos.length+1), grupo:"bucle", uds:null});
+    marcarSucio(); renderEditor(); render(); persist();
+  });
+  $("btnNuevaAct").addEventListener("click", function(){
+    var a = actNueva(); DB.acts.push(a); DB.actual = a.id;
+    marcarSucio(); renderEditor(); render(); persist();
+    toast("Actividad nueva creada · ponle nombre y define sus pasos");
+  });
+  $("btnDupAct").addEventListener("click", function(){
+    var o = A(), c = JSON.parse(JSON.stringify(o));
+    c.id = nid("a"); c.nombre = o.nombre + " (copia)"; c.tomas = [];
+    c.est = {pid:null, ciclo:1, lote:1};
+    c.pasos.forEach(function(p){ p.id = nid("p"); });
+    DB.acts.push(c); DB.actual = c.id;
+    marcarSucio(); renderEditor(); render(); persist();
+    toast("Actividad duplicada, sin las tomas");
+  });
+  $("btnDelAct").addEventListener("click", function(){
+    if(DB.acts.length < 2){ toast("Tiene que quedar al menos una actividad"); return; }
+    var a = A();
+    if(!confirm("Se borra «" + a.nombre + "» con sus " + a.tomas.length + " tomas. ¿Seguimos?")) return;
+    DB.acts = DB.acts.filter(function(x){ return x.id !== a.id; });
+    DB.actual = DB.acts[0].id;
+    marcarSucio(); renderEditor(); render(); persist();
+  });
+
+  document.addEventListener("keydown", function(e){
+    var t = e.target.tagName;
+    if(t === "INPUT" || t === "SELECT" || t === "TEXTAREA") return;
+    if(vista !== "crono") return;
+    var k = e.key.toLowerCase();
+    if(e.code === "Space" || k === "enter"){ e.preventDefault(); principal(); }
+    else if(k === "c"){ e.preventDefault(); cerrarLote(); }
+    else if(k === "z"){ e.preventDefault(); undo(); }
+    else if(k === "p"){ e.preventDefault(); rt.running ? pause() : resume(); }
+    else if(k === "n"){ e.preventDefault(); skip(); }
+    else if(k === "r" || e.key === "Escape"){ e.preventDefault(); cero(); }
+    else if(k === "g"){ e.preventDefault(); guardarTodo(); }
+    else if(k === "s"){ e.preventDefault(); cerrarSesion(); }
+    else if(k >= "0" && k <= "9"){
+      e.preventDefault();
+      var n = (k === "0") ? 10 : parseInt(k, 10);
+      var p = A().pasos[n-1];
+      if(p){
+        if(esRunner()) cambiarTarea(p.id);
+        else { setPaso(p.id); toast("Midiendo el paso " + num2(n) + " · " + p.nombre); }
+      }
+    }
+  });
+  window.addEventListener("beforeunload", function(e){
+    if(sucio){ e.preventDefault(); e.returnValue = ""; }
+  });
+
+  /* ---- instalable en el movil: usa manifest.json y sw.js del repositorio ---- */
+  if("serviceWorker" in navigator){
+    window.addEventListener("load", function(){
+      navigator.serviceWorker.register("sw.js").catch(function(){});
+    });
+  }
+
+  aplicarCfg();
+  render();
+  restore();
+  renderNube();
+  if(ghLista()){
+    setTimeout(function(){
+      nubeEstado("bajando…");
+      bajarNube().then(function(fila){
+        if(fila && fila.datos){
+          var r = fusionar(fila.datos);
+          aplicarCfg(); render(); renderNube(); persistYa();
+          nubeEstado("sincronizado");
+          if(r.nuevas) toast("Traídas " + r.nuevas + " tomas de la nube");
+        }else{ nubeEstado("conectado · estudio vacío"); }
+      }).catch(function(){ nubeEstado("sin conexión · trabajando en local"); });
+    }, 900);
+  }
+  if(window.requestAnimationFrame) requestAnimationFrame(tick);
+  setInterval(renderCorrido, 500);   // el reloj corrido no depende de la animacion
+  setInterval(refrescarNube, 60000); // trae cada minuto lo que hayan cambiado otros
+})();
+
+</script>
+</body>
+</html>
