@@ -2007,18 +2007,34 @@
      "uds": 1
     }
    ],
-   "tomas": [],
+   "tomas": [
+    {
+     "pid": "peujs13",
+     "ms": 1721,
+     "uds": 1,
+     "lote": 1,
+     "ts": 1788941334115,
+     "origen": "crono",
+     "ses": null,
+     "tid": "thboj18",
+     "prev": {
+      "pid": "peujs13",
+      "ciclo": 1,
+      "lote": 1
+     }
+    }
+   ],
    "sesiones": [],
    "est": {
-    "pid": "peujs12",
+    "pid": "peujs13",
     "ciclo": 1,
     "lote": 1
    },
    "ses": {
     "run": false,
-    "acc": 0,
+    "acc": 4289.600000008941,
     "ts": 0,
-    "ini": null,
+    "ini": 1788941332394,
     "uds": null
    }
   }
