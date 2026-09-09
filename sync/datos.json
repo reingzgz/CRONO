@@ -1,6 +1,6 @@
 {
  "v": 3,
- "actual": "a2o3v11",
+ "actual": "aeujs11",
  "cfg": {
   "costeHora": 12,
   "suplementos": 0.18,
@@ -1962,6 +1962,67 @@
    "sesiones": [],
    "est": {
     "pid": "p2o3v12",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "aeujs11",
+   "modo": "runner",
+   "nombre": "Runner · área nueva",
+   "area": "",
+   "unidad": "tarea",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "peujs12",
+     "nombre": "REPONER MATERIAL",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "peujs13",
+     "nombre": "RETIRAR PRODUCTO ACABADO",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "peujs14",
+     "nombre": "LLEVAR A PALETIZAR",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "peujs15",
+     "nombre": "TRAER CAJAS VACIAS",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "peujs16",
+     "nombre": "MOVER PALE CON TRANSPALETA",
+     "grupo": "libre",
+     "uds": 1
+    },
+    {
+     "id": "peujs17",
+     "nombre": "ESPERA / SIN TAREA",
+     "grupo": "libre",
+     "uds": 1
+    }
+   ],
+   "tomas": [],
+   "sesiones": [],
+   "est": {
+    "pid": "peujs12",
     "ciclo": 1,
     "lote": 1
    },
