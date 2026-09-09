@@ -1,6 +1,6 @@
 {
  "v": 3,
- "actual": "conf",
+ "actual": "a2o3v11",
  "cfg": {
   "costeHora": 16.32,
   "suplementos": 0.15,
@@ -1901,6 +1901,49 @@
    ],
    "est": {
     "pid": "pmoin17",
+    "ciclo": 1,
+    "lote": 1
+   },
+   "ses": {
+    "run": false,
+    "acc": 0,
+    "ts": 0,
+    "ini": null,
+    "uds": null
+   }
+  },
+  {
+   "id": "a2o3v11",
+   "modo": "secuencia",
+   "nombre": "Sorter paque ",
+   "area": "",
+   "unidad": "unidad",
+   "udsCiclo": 1,
+   "udsLote": 1,
+   "pasos": [
+    {
+     "id": "p2o3v12",
+     "nombre": "PASO 1",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "p2o3v13",
+     "nombre": "PASO 2",
+     "grupo": "bucle",
+     "uds": null
+    },
+    {
+     "id": "p2o3v14",
+     "nombre": "PASO 3",
+     "grupo": "bucle",
+     "uds": null
+    }
+   ],
+   "tomas": [],
+   "sesiones": [],
+   "est": {
+    "pid": "p2o3v12",
     "ciclo": 1,
     "lote": 1
    },
