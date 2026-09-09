@@ -2007,26 +2007,10 @@
      "uds": 1
     }
    ],
-   "tomas": [
-    {
-     "pid": "peujs13",
-     "ms": 1721,
-     "uds": 1,
-     "lote": 1,
-     "ts": 1788941334115,
-     "origen": "crono",
-     "ses": null,
-     "tid": "thboj18",
-     "prev": {
-      "pid": "peujs13",
-      "ciclo": 1,
-      "lote": 1
-     }
-    }
-   ],
+   "tomas": [],
    "sesiones": [],
    "est": {
-    "pid": "peujs13",
+    "pid": "peujs12",
     "ciclo": 1,
     "lote": 1
    },
