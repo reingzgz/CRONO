@@ -2005,18 +2005,6 @@
      "nombre": "T I",
      "grupo": "libre",
      "uds": 1
-    },
-    {
-     "id": "peujs16",
-     "nombre": "MOVER PALE CON TRANSPALETA",
-     "grupo": "libre",
-     "uds": 1
-    },
-    {
-     "id": "peujs17",
-     "nombre": "ESPERA / SIN TAREA",
-     "grupo": "libre",
-     "uds": 1
     }
    ],
    "tomas": [],
