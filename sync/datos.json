@@ -2007,7 +2007,23 @@
      "uds": 1
     }
    ],
-   "tomas": [],
+   "tomas": [
+    {
+     "pid": "peujs12",
+     "ms": 211376.70000000298,
+     "uds": 1,
+     "lote": 1,
+     "ts": 1788941737477,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tpyx119",
+     "prev": {
+      "pid": "peujs12",
+      "ciclo": 1,
+      "lote": 1
+     }
+    }
+   ],
    "sesiones": [],
    "est": {
     "pid": "peujs12",
