@@ -2022,6 +2022,21 @@
       "ciclo": 1,
       "lote": 1
      }
+    },
+    {
+     "pid": "peujs12",
+     "ms": 4157.399999991059,
+     "uds": 1,
+     "lote": 1,
+     "ts": 1788941741634,
+     "origen": "crono",
+     "ses": null,
+     "tid": "tq24i20",
+     "prev": {
+      "pid": "peujs12",
+      "ciclo": 1,
+      "lote": 1
+     }
     }
    ],
    "sesiones": [],
@@ -2032,7 +2047,7 @@
    },
    "ses": {
     "run": false,
-    "acc": 4289.600000008941,
+    "acc": 217427.5000000149,
     "ts": 0,
     "ini": 1788941332394,
     "uds": null
