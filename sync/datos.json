@@ -2750,7 +2750,7 @@
      "lote": 1,
      "ts": 1788941737477,
      "origen": "crono",
-     "ses": null,
+     "ses": "Sesión 3 · 30/10/2026 12:45",
      "tid": "tpyx119",
      "prev": {
       "pid": "peujs12",
@@ -2765,7 +2765,7 @@
      "lote": 1,
      "ts": 1788941741634,
      "origen": "crono",
-     "ses": null,
+     "ses": "Sesión 3 · 30/10/2026 12:45",
      "tid": "tq24i20",
      "prev": {
       "pid": "peujs12",
@@ -2791,6 +2791,15 @@
      "corrido": 2187388.9000000004,
      "asignado": 2052975.6000000034,
      "tomas": 49,
+     "uds": 0
+    },
+    {
+     "id": "soqyi11",
+     "nombre": "Sesión 3 · 30/10/2026 12:45",
+     "fecha": "30/10/2026 12:45",
+     "corrido": 0,
+     "asignado": 215534.09999999404,
+     "tomas": 2,
      "uds": 0
     }
    ],
